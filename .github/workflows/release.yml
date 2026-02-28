@@ -1,0 +1,26 @@
+name: Create Release
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on tags like v1.0.0
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: report.tex
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: report.pdf
+          generate_release_notes: true
