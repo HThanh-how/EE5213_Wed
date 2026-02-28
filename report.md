@@ -1,6 +1,6 @@
 # ASIC Verification - Exercise 1 Report
-**Name:** Vũ Tiến Giang  
-**MSHV:** 2570188  
+**Student:** Vu Tien Giang  
+**Student ID:** 2570188  
 
 ---
 
