@@ -33,70 +33,37 @@ module counter_tb;
         enab = 0;
         cnt_in = 0;
 
-        // Wait for global reset to finish
-        #15;
+        #12; // Time 12
+        rst = 0; load = 1; enab = 1; cnt_in = 5'b10101; 
+        #8;  // Time 20 (after posedge at 15)
+        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
         
-        // At time 20 rst=0 load=1 enab=1 cnt_in=10101 => 21
-        #5; // Time 20
-        rst = 0;
-        load = 1;
-        enab = 1;
-        cnt_in = 5'b10101;
-        #2; // Slight delay to let signals settle before printing
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time-2, rst, load, enab, cnt_in, cnt_out);
-        #3;
+        #2; // Time 22
+        rst = 0; load = 1; enab = 1; cnt_in = 5'b01010;
+        #8; // Time 30
+        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
         
-        // At time 30 rst=0 load=1 enab=1 cnt_in=01010 => 10
-        #5; // Time 30
-        rst = 0;
-        load = 1;
-        enab = 1;
-        cnt_in = 5'b01010;
-        #2;
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time-2, rst, load, enab, cnt_in, cnt_out);
-        #3;
+        #2; // Time 32
+        rst = 0; load = 1; enab = 1; cnt_in = 5'b11111;
+        #8; // Time 40
+        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
         
-        // At time 40 rst=0 load=1 enab=1 cnt_in=11111 => 31
-        #5; // Time 40
-        rst = 0;
-        load = 1;
-        enab = 1;
-        cnt_in = 5'b11111;
-        #2;
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time-2, rst, load, enab, cnt_in, cnt_out);
-        #3;
+        #2; // Time 42
+        rst = 1; load = 1; enab = 1; cnt_in = 5'b11111;
+        #8; // Time 50
+        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
         
-        // At time 50 rst=1 load=1 enab=1 cnt_in=11111 => 31
-        #5; // Time 50
-        rst = 1;
-        load = 1;
-        enab = 1;
-        cnt_in = 5'b11111;
-        #2;
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time-2, rst, load, enab, cnt_in, cnt_out);
-        #3;
+        #2; // Time 52
+        rst = 0; load = 1; enab = 1; cnt_in = 5'b11111;
+        #8; // Time 60
+        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
         
-        // At time 60 rst=0 load=1 enab=1 cnt_in=11111 => 31
-        #5; // Time 60
-        rst = 0;
-        load = 1;
-        enab = 1;
-        cnt_in = 5'b11111;
-        #2;
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time-2, rst, load, enab, cnt_in, cnt_out);
-        #3;
-        
-        // At time 70 rst=0 load=0 enab=1 cnt_in=11111 => 31
-        #5; // Time 70
-        rst = 0;
-        load = 0;
-        enab = 1;
-        cnt_in = 5'b11111;
-        #2;
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time-2, rst, load, enab, cnt_in, cnt_out);
-        #3;
+        #2; // Time 62
+        rst = 0; load = 0; enab = 1; cnt_in = 5'b11111;
+        #8; // Time 70
+        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
 
-        #20;
+        #10;
         $finish;
     end
     
