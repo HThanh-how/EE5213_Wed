@@ -38,4 +38,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Report-PDFs
-          path: EE5213_*.pdf
+          path: |
+            EE5213_*.pdf
+            docs/ASIC_Exercise1.pdf

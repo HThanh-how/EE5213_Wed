@@ -28,5 +28,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: EE5213_*.pdf
+          files: |
+            EE5213_*.pdf
+            docs/ASIC_Exercise1.pdf
           generate_release_notes: true
