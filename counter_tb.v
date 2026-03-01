@@ -5,7 +5,7 @@ module counter_tb;
     reg clk;
     reg rst;
     reg load;
-    reg enab;
+    reg en;
     reg [4:0] cnt_in;
     wire [4:0] cnt_out;
 
@@ -14,7 +14,7 @@ module counter_tb;
         .clk(clk),
         .rst(rst),
         .load(load),
-        .enab(enab),
+        .en(en),
         .cnt_in(cnt_in),
         .cnt_out(cnt_out)
     );
@@ -30,38 +30,38 @@ module counter_tb;
         // Initialize Inputs
         rst = 1;
         load = 0;
-        enab = 0;
+        en = 0;
         cnt_in = 0;
 
         #12; // Time 12
-        rst = 0; load = 1; enab = 1; cnt_in = 5'b10101; 
+        rst = 0; load = 1; en = 1; cnt_in = 5'b10101; 
         #8;  // Time 20 (after posedge at 15)
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
+        $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", $time, rst, load, en, cnt_in, cnt_out);
         
         #2; // Time 22
-        rst = 0; load = 1; enab = 1; cnt_in = 5'b01010;
+        rst = 0; load = 1; en = 1; cnt_in = 5'b01010;
         #8; // Time 30
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
+        $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", $time, rst, load, en, cnt_in, cnt_out);
         
         #2; // Time 32
-        rst = 0; load = 1; enab = 1; cnt_in = 5'b11111;
+        rst = 0; load = 1; en = 1; cnt_in = 5'b11111;
         #8; // Time 40
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
+        $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", $time, rst, load, en, cnt_in, cnt_out);
         
         #2; // Time 42
-        rst = 1; load = 1; enab = 1; cnt_in = 5'b11111;
+        rst = 1; load = 1; en = 1; cnt_in = 5'b11111;
         #8; // Time 50
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
+        $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", $time, rst, load, en, cnt_in, cnt_out);
         
         #2; // Time 52
-        rst = 0; load = 1; enab = 1; cnt_in = 5'b11111;
+        rst = 0; load = 1; en = 1; cnt_in = 5'b11111;
         #8; // Time 60
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
+        $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", $time, rst, load, en, cnt_in, cnt_out);
         
         #2; // Time 62
-        rst = 0; load = 0; enab = 1; cnt_in = 5'b11111;
+        rst = 0; load = 0; en = 1; cnt_in = 5'b11111;
         #8; // Time 70
-        $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", $time, rst, load, enab, cnt_in, cnt_out);
+        $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", $time, rst, load, en, cnt_in, cnt_out);
 
         #10;
         $finish;

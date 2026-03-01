@@ -6,10 +6,10 @@ module stack #(
 ) (
     input clk,
     input rst,        // Asynchronous active-high reset
-    input push,       // Write enable
-    input pop,        // Read enable
-    input [WIDTH-1:0] din,
-    output reg [WIDTH-1:0] dout,
+    input en_wr,      // Write enable
+    input en_rd,      // Read enable
+    input [WIDTH-1:0] data_wr,
+    output reg [WIDTH-1:0] data_rd,
     output reg full,
     output reg empty
 );
@@ -25,16 +25,16 @@ module stack #(
             sp <= 0;
             full <= 0;
             empty <= 1;
-            dout <= 0;
+            data_rd <= 0;
         end else begin
-            if (push && !full) begin
-                mem[sp] <= din;
+            if (en_wr && !full) begin
+                mem[sp] <= data_wr;
                 sp <= sp + 1;
                 empty <= 0;
                 if (sp + 1 == MAX_DEPTH) 
                     full <= 1;
-            end else if (pop && !empty) begin
-                dout <= mem[sp - 1]; // LIFO
+            end else if (en_rd && !empty) begin
+                data_rd <= mem[sp - 1]; // LIFO
                 sp <= sp - 1;
                 full <= 0;
                 if (sp - 1 == 0)

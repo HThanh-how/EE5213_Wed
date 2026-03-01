@@ -16,19 +16,26 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v4
         
-      - name: Compile LaTeX document
+      - name: Generate Individual LaTeX files
+        run: |
+          sed -e 's/<STUDENT_NAME>/Nguyen Thai Thanh Binh/g' -e 's/<STUDENT_ID>/2570175/g' report.tex > EE5213_Exercise_1_Report_Nguyen_Thai_Thanh_Binh_2570175.tex
+          sed -e 's/<STUDENT_NAME>/Vu Tien Giang/g' -e 's/<STUDENT_ID>/2570188/g' report.tex > EE5213_Exercise_1_Report_Vu_Tien_Giang_2570188.tex
+          sed -e 's/<STUDENT_NAME>/Pham Huy Thanh/g' -e 's/<STUDENT_ID>/2570317/g' report.tex > EE5213_Exercise_1_Report_Pham_Huy_Thanh_2570317.tex
+          git rm -f report.pdf || true
+          
+      - name: Compile LaTeX documents
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: report.tex
+          root_file: "EE5213_*.tex"
           
       - name: Commit and Push PDF
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "docs(pdf): generate report.pdf via GitHub Actions"
+          commit_message: "docs(pdf): generate individual student reports via GitHub Actions"
           file_pattern: "*.pdf"
           
-      - name: Upload PDF Artifact
+      - name: Upload PDF Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Report-PDF
-          path: report.pdf
+          name: Report-PDFs
+          path: EE5213_*.pdf
