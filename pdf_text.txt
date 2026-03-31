@@ -1,0 +1,323 @@
+--- Page 0 ---
+January 15, 2026 1Finite State Machines (FSMs): 
+Formal Modeling  of Sequential Systems
+--- Page 1 ---
+21) Formal  Modeling of Sequential Systems
+Abstracted 
+as FSM◼ M = (I, S, , , O, S0) where 
+❑I: set of inputs
+❑S: set of states
+❑O: set of outputs
+❑: transition relation (   S  I  S)
+❑:  output relation 
+❑S0: set of initial states 
+❑Deterministic machines:  and  are 
+functions, S0 = {s0}.
+◼A state characterizes the 
+behavior of a sequential system, 
+given a fixed set of values of 
+the memory elements
+January 15, 2026
+--- Page 2 ---
+3Next State Function: Driving Engine
+Combinational
+Networkx1
+x2
+xn………o1
+o2
+om
+vk
+v2
+v1v’k
+v’2
+v’1memory
+memory
+memory◼The current state V = ( v1, v2, ..., vn)
+◼The next state V’ = ( v1’, v2’, ..., vn’) 
+◼Next State Function:  V’ = ( v1’, v2’, ..., vn’) =R (v1, v2, ..., vn) 
+January 15, 2026
+--- Page 3 ---
+4State Transition Graph (STG)
+
+--- Page 4 ---
+January 15, 2026 5State Explosion Problem
+2
+250
+▪Problem: “State explosion” - e.g., 32 -bit → register 232 states
+▪A small design that uses 250 bits of data has at least 2250 states
+  More states than particles in the Universe!
+▪The model is too large to store in available memory!
+
+--- Page 5 ---
+January 15, 2026 6Foundation for Automatic Formal 
+Sequential Verification
+◼State Reachability Analysis (State Enumeration, State Traversal)
+--- Page 6 ---
+January 15, 2026 7S0 = the set of initial statesState Reachability Analysis
+(State Enumeration, State Traversal)
+
+--- Page 7 ---
+January 15, 2026 8Set of Reachable States
+S1 is the set of states reachable from the initial states in less 
+than or equal to one step.
+--- Page 8 ---
+January 15, 2026 9The fixed -point iteration terminates when it reaches 𝑆6=𝑆5 ,and 
+the resulting set is the set of reachable states.Fixed -point Set of Reachable States
+--- Page 9 ---
+January 15, 2026 10State  Reachability Analysis
+◼Initial states: 
+❑A state, in which the system begins its 
+functioning.
+◼Reachable states: 
+❑A state that can be reached from the 
+initial one though a finite sequence of 
+transitions under allowed inputs.
+◼Unreachable states: 
+❑A state that cannot be reached from 
+the initial under any sequence of 
+inputs.
+Unreachable statesReachable states
+--- Page 10 ---
+January 15, 2026 11◼Reachability(Transition Relation R, Initial State I )
+{
+ReachedStates  = I;
+iterate the following computation:
+{
+ReachedStatesNew  = Image(TR, ReachedStates  );
+if (ReachedStatesNew  is contained in  ReachedStates  )   stop;
+ReachedStates  = ReachedStates  + ReachedStatesNew ;
+}
+}State  Reachability Analysis  Ideas
+--- Page 11 ---
+A Detailed Reachability Analysis
+Reachability  (R, I)  {
+1.ARS = NNS = I; 
+2.Iterate  the following  computation :  {
+3.NS = R(all inputs，NNS);
+4.NNS = NS – ARS; 
+5.if NNS =  then print ARS and stop;
+6.ARS = ARS  NNS; }
+}
+2026/1/15 12R: Next  state  function : from  current  states  to next states
+I: The set of the initial  states . 
+NS: The set of the reached  next states . 
+NNS : The set of the new next states  (called  Frontier  Set).
+ARS: The set of all the reached  states . 
+--- Page 12 ---
+NS = R(all inputs ，NNS)
+2026 /1/15 13RReachability  (R, I)  {
+1.ARS = NNS = I; 
+2.Iterate  the following  computation :  {
+3.NS = R(all inputs，NNS);
+4.NNS = NS – ARS; 
+5.if NNS =  then print ARS and stop;
+6.ARS = ARS  NNS; }
+}
+--- Page 13 ---
+January 15, 2026 14Explicit State Enumeration
+s0s1s2
+s5 s4s3
+NS NNS ARS
+Initialization {S0} {S0}
+Iteration 1 {S1, S5} {S1, S5} {S0, S1, S5}
+Iteration 2 {S1, S2} {S2} {S0, S1, S2, S5}
+Iteration 3 {S3} {S3} {S0, S1, S2, S3, S5}
+Iteration 4 {S4} {S4} {S0, S1, S2, S3, S4, S5}
+Iteration 5 {S2, S5} { }Reachability  (R, I)  {
+1.ARS = NNS = I; 
+2.Iterate  the following  computation :  {
+3.NS = R(all inputs，NNS);
+4.NNS = NS – ARS; 
+5.if NNS =  then print ARS and stop;
+6.ARS = ARS  NNS; }
+}
+--- Page 14 ---
+2) Sequential Equivalence Checking
+15 January 15, 2026
+
+--- Page 15 ---
+Product Machine
+◼Two sets A ={a, b, c} and B = {1, 2}.
+◼A × B = { <α, β> | α ∈ A and β ∈ B }
+◼A × B = {<a, 1>, <a, 2>, <b, 1>, <b, 2>, <c, 1>, <c, 2> } 
+◼FSM A  = (SA, IA, OA , RA, IA)
+◼FSM B  = (SB, IB, OB , RB, IB) 
+◼Assumptions:
+❑Synchronized: orchestrated by the same clock
+❑A  B = : they use different variables
+January 15, 2026 16
+--- Page 16 ---
+Product Machine
+◼FSM A  = (SA, IA, OA , RA, IA)
+◼FSM B  = (SB, IB, OB , RB, IB) 
+◼FSM C  = A × B=(SC, IC, OC , RC, IC) 
+❑SC =  SA × SB  
+❑IC =  IA × IB   
+❑OC =  OA × OB  
+❑IC =  (IA, IB)  
+❑RC ((sA, sB),(iA, iB)) = ((s′A, s′B), (oA, oB)), 
+❑where
+◼(s′A,  oA)=RA(sA, iA), and (s′B, oB)=RB(sB, iB),
+◼for all sASA, sBSB, iAIA, and iBIB.
+January 15, 2026 17MA
+MBMAMB
+--- Page 17 ---
+M1 and M2
+January 15, 2026 18v1 v1'
+a1
+v2v2'
+a20 1 01
+10
+0 1 01
+10
+--- Page 18 ---
+Product Machine
+January 15, 2026 1900 01
+0 1 01
+10v = (v1, v2); v ’ = (v1’, v2’)
+10 110 1 01
+10
+a1a2v1v2v1'v2'
+0 0 0 0 0 0
+--- Page 19 ---
+Product Machine
+January 15, 2026 200 1 01
+10v = (v1, v2); v ’ = (v1’, v2’)0 1 01
+10
+a1a2v1v2v1'v2'
+0 0 0 0 0 0
+0 0 0 1 0 1
+0 0 1 0 1 0
+0 0 1 1 1 1
+0 1 0 0 0 1
+0 1 0 1 0 0
+0 1 1 0 1 1
+0 1 1 1 1 000 01
+10 111100 00
+00 0011
+111101
+01
+01
+0110 10 10 10
+16 lines16 arcs
+--- Page 20 ---
+Shared -Input Product Machine
+◼v = (v1, v2); v ’ = (v1’, v2’), i = i1 = i2
+◼R(v, x, v’) = R1 (v1, x, v’1)  R2 (v2, x, v’2) 
+January 15, 2026 21M1
+M2iM1M2
+--- Page 21 ---
+Shared -Input Product Machine
+January 15, 2026 22av1 v1'
+v2v2'v1 v1'
+a1
+v2v2'
+a2
+--- Page 22 ---
+Shared -Input Product Machine
+January 15, 2026 2300 01
+0 1 01
+10v = (v1, v2); v ’ = (v1’, v2’)
+10 110 1 01
+10
+a v1v2v1'v2'
+0 0 0 0 0
+--- Page 23 ---
+Equivalence Checking
+January 15, 2026 240 1 01
+10v = (v1, v2); v ’ = (v1’, v2’)0 1 01
+10
+a v1v2v1'v2'
+0 0 0 0 0
+0 0 1 0 1
+0 1 0 1 0
+0 1 1 1 1
+1 0 0 1 1
+1 0 1 1 0
+1 1 0 0 1
+1 1 1 0 000 01
+10 1110 0
+0 01
+1 1
+--- Page 24 ---
+Difference
+January 15, 2026 2500 01
+10 1110 0
+0 01
+1 100 01
+10 111100 00
+00 0011
+111101
+01
+01
+0110 10 10 10
+--- Page 25 ---
+Shared -Input Product Machine
+January 15, 2026 26av1 v1'
+v2v2'v1 v1'
+v2v2'a1
+a2
+0 1 0,1
+010 1 01
+10
+--- Page 26 ---
+Shared -Input Product Machine
+January 15, 2026 27av1 v1'
+v2v2'
+00 01
+10 11a v1v2v1'v2'
+0 0 0 0 0
+0 1 0,1
+010 1 01
+10
+--- Page 27 ---
+Equivalence Checking
+January 15, 2026 28av1 v1'
+v2v2'
+a v1v2v1'v2'
+0 0 0 0 0
+0 0 1 0 0
+0 1 0 1 0
+0 1 1 1 0
+1 0 0 1 0
+1 0 1 1 1
+1 1 0 0 0
+1 1 1 0 100 01
+10 110
+00
+01 1 1 1
+0 1 0,1
+010 1 01
+10
+--- Page 28 ---
+Equivalence  Checking
+January 15, 2026 2900 01
+10 110
+00
+01 1 1 100 01
+10 1110 0
+0 01
+1 1
+--- Page 29 ---
+January 15, 2026 30
+1
+2Shared -Input Product Machine
+M1
+M2iM1M2
+--- Page 30 ---
+2026/1/15 31References
+◼K. L. McMillan. Symbolic Model Checking. Kluwer Academic Publishers, 1993. 
+◼J. R. Burch, E. M. Clarke, D. Long, K. L. McMillan, D. L. Dill. Symbolic model 
+checking for sequential circuit verification. IEEE Transactions on CAD, 13(4), 
+1994, pp. 401 -424.
+◼J. R. Burch, E. M. Clarke, K. L. McMillan, D. L. Dill, and L. J. Hwang. Symbolic 
+model checking: 1020 states and beyond. Information and Computation , 98(2), 
+June 1992.
+◼E. M. Clark, O. Grumberg  and D. A. Peled, “Model Checking”, MIT Press, 1999. 
+◼M. Huth, M. Ryan, “Logic in Computer Science: Modeling and Reasoning about 
+Systems”, Cambridge University Press, 2000. 
+◼William K. Lam, “Hardware Design Verification: Simulation and Formal Method -
+Based Approaches”, Prentice Hall, 2005. 
+◼Edward A. Lee and Sanjit A. Seshia , Introduction to Embedded Systems, A 
+Cyber -Physical Systems Approach, http://LeeSeshia.org, ISBN 978 -0-557-
+70857 -4, 2011.
