@@ -30,7 +30,9 @@
     showspaces=false,                
     showstringspaces=false,
     showtabs=false,                  
-    tabsize=2
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{black}
 }
 \lstset{style=mystyle}
 
@@ -44,7 +46,7 @@
 \textbf{\normalsize Faculty of Electrical and Electronics Engineering}\\
 \vspace{0.5cm}
 
-\includegraphics[width=0.25\textwidth]{01_logobachkhoasang.png}\\
+\includegraphics[width=0.25\textwidth]{img/01_logobachkhoasang.png}\\
 \vspace{0.5cm}
 
 \rule{\linewidth}{0.5mm}\\
@@ -65,7 +67,7 @@
 \vspace{1cm}
 
 \begin{tabular}{rl}
-\textbf{Student 1:} & Vu Tien Giang - 2570188\\[0.5cm]
+\textbf{Student:} & <STUDENT_NAME> - <STUDENT_ID>\\[0.5cm]
 \end{tabular}
 
 \vspace{1cm}
@@ -92,8 +94,8 @@ Design a 5-bit synchronous counter based on the specifications provided and writ
     \item The counter is clocked on the rising edge of \texttt{clk}.
     \item \texttt{rst} is active high and asynchronously resets the output to 0.
     \item \texttt{cnt\_in} and \texttt{cnt\_out} are 5-bit signals.
-    \item If \texttt{load} is high, the counter is loaded from \texttt{cnt\_in} (takes priority over \texttt{enab}).
-    \item Otherwise, if \texttt{enab} is high, \texttt{cnt\_out} is incremented.
+    \item If \texttt{load} is high, the counter is loaded from \texttt{cnt\_in} (takes priority over \texttt{en}).
+    \item Otherwise, if \texttt{en} is high, \texttt{cnt\_out} is incremented.
 \end{itemize}
 
 \subsection{Implementation (\texttt{counter.v})}
@@ -104,7 +106,7 @@ module counter (
     input clk,
     input rst,
     input load,
-    input enab,
+    input en,
     input [4:0] cnt_in,
     output reg [4:0] cnt_out
 );
@@ -113,7 +115,7 @@ module counter (
             cnt_out <= 5'b00000;
         end else if (load) begin
             cnt_out <= cnt_in;
-        end else if (enab) begin
+        end else if (en) begin
             cnt_out <= cnt_out + 1;
         end
     end
@@ -128,11 +130,11 @@ To match the precise timestamps detailed in the exercise, the testbench drives i
 
 module counter_tb;
     reg clk;
-    reg rst, load, enab;
+    reg rst, load, en;
     reg [4:0] cnt_in;
     wire [4:0] cnt_out;
 
-    counter uut (.clk(clk), .rst(rst), .load(load), .enab(enab), .cnt_in(cnt_in), .cnt_out(cnt_out));
+    counter uut (.clk(clk), .rst(rst), .load(load), .en(en), .cnt_in(cnt_in), .cnt_out(cnt_out));
 
     initial begin
         clk = 0;
@@ -140,31 +142,31 @@ module counter_tb;
     end
 
     initial begin
-        rst = 1; load = 0; enab = 0; cnt_in = 0;
+        rst = 1; load = 0; en = 0; cnt_in = 0;
 
-        #12; rst = 0; load = 1; enab = 1; cnt_in = 5'b10101; 
-        #8;  $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, enab, cnt_in, cnt_out);
+        #12; rst = 0; load = 1; en = 1; cnt_in = 5'b10101; 
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
         
-        #2;  rst = 0; load = 1; enab = 1; cnt_in = 5'b01010;
-        #8;  $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, enab, cnt_in, cnt_out);
+        #2;  rst = 0; load = 1; en = 1; cnt_in = 5'b01010;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
         
-        #2;  rst = 0; load = 1; enab = 1; cnt_in = 5'b11111;
-        #8;  $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, enab, cnt_in, cnt_out);
+        #2;  rst = 0; load = 1; en = 1; cnt_in = 5'b11111;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
         
-        #2;  rst = 1; load = 1; enab = 1; cnt_in = 5'b11111;
-        #8;  $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, enab, cnt_in, cnt_out);
+        #2;  rst = 1; load = 1; en = 1; cnt_in = 5'b11111;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
         
-        #2;  rst = 0; load = 1; enab = 1; cnt_in = 5'b11111;
-        #8;  $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, enab, cnt_in, cnt_out);
+        #2;  rst = 0; load = 1; en = 1; cnt_in = 5'b11111;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
         
-        #2;  rst = 0; load = 0; enab = 1; cnt_in = 5'b11111;
-        #8;  $display("At time %0t rst=%b load=%b enab=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, enab, cnt_in, cnt_out);
+        #2;  rst = 0; load = 0; en = 1; cnt_in = 5'b11111;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
 
         #10; $finish;
     end
@@ -174,12 +176,12 @@ endmodule
 \subsection{Simulation Results}
 The simulation log matches the specified requirements at the detailed time points.
 \begin{lstlisting}[language=bash]
-At time 20000 rst=0 load=1 enab=1 cnt_in=10101 cnt_out=10101
-At time 30000 rst=0 load=1 enab=1 cnt_in=01010 cnt_out=01010
-At time 40000 rst=0 load=1 enab=1 cnt_in=11111 cnt_out=11111
-At time 50000 rst=1 load=1 enab=1 cnt_in=11111 cnt_out=00000
-At time 60000 rst=0 load=1 enab=1 cnt_in=11111 cnt_out=11111
-At time 70000 rst=0 load=0 enab=1 cnt_in=11111 cnt_out=00000
+At time 20000 rst=0 load=1 en=1 cnt_in=10101 cnt_out=10101
+At time 30000 rst=0 load=1 en=1 cnt_in=01010 cnt_out=01010
+At time 40000 rst=0 load=1 en=1 cnt_in=11111 cnt_out=11111
+At time 50000 rst=1 load=1 en=1 cnt_in=11111 cnt_out=00000
+At time 60000 rst=0 load=1 en=1 cnt_in=11111 cnt_out=11111
+At time 70000 rst=0 load=0 en=1 cnt_in=11111 cnt_out=00000
 \end{lstlisting}
 
 \section{Exercise 2: Stack Design and Verification}
@@ -191,10 +193,10 @@ Create a parameterized LIFO (Last-In-First-Out) Stack design, present testing sc
 \begin{itemize}
     \item Parameterized for \texttt{WIDTH} and \texttt{DEPTH}. \texttt{DEPTH} is dynamically managed via \texttt{DEPTH\_LOG2} (power of 2 constraint).
     \item Asynchronous high-active reset (\texttt{rst}).
-    \item \texttt{push} (write) and \texttt{pop} (read) synchronous to the rising edge of \texttt{clk}.
+    \item \texttt{en\_wr} (write) and \texttt{en\_rd} (read) synchronous to the rising edge of \texttt{clk}.
     \item Data written later corresponds to earlier reads (LIFO constraint).
-    \item Ignores push attempts when \texttt{full} flag is set.
-    \item Ignores pop attempts when \texttt{empty} flag is set.
+    \item Ignores en\_wr attempts when \texttt{full} flag is set.
+    \item Ignores en\_rd attempts when \texttt{empty} flag is set.
 \end{itemize}
 
 \subsection{Implementation (\texttt{stack.v})}
@@ -205,9 +207,9 @@ module stack #(
     parameter WIDTH = 8,
     parameter DEPTH_LOG2 = 3
 ) (
-    input clk, rst, push, pop,
-    input [WIDTH-1:0] din,
-    output reg [WIDTH-1:0] dout,
+    input clk, rst, en_wr, en_rd,
+    input [WIDTH-1:0] data_wr,
+    output reg [WIDTH-1:0] data_rd,
     output reg full, empty
 );
     localparam MAX_DEPTH = 1 << DEPTH_LOG2;
@@ -216,15 +218,15 @@ module stack #(
 
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            sp <= 0; full <= 0; empty <= 1; dout <= 0;
+            sp <= 0; full <= 0; empty <= 1; data_rd <= 0;
         end else begin
-            if (push && !full) begin
-                mem[sp] <= din;
+            if (en_wr && !full) begin
+                mem[sp] <= data_wr;
                 sp <= sp + 1;
                 empty <= 0;
                 if (sp + 1 == MAX_DEPTH) full <= 1;
-            end else if (pop && !empty) begin
-                dout <= mem[sp - 1];
+            end else if (en_rd && !empty) begin
+                data_rd <= mem[sp - 1];
                 sp <= sp - 1;
                 full <= 0;
                 if (sp - 1 == 0) empty <= 1;
@@ -242,20 +244,20 @@ module stack_tb;
     parameter WIDTH = 8;
     parameter DEPTH_LOG2 = 2; // Testing depth 4
 
-    reg clk, rst, push, pop;
-    reg [WIDTH-1:0] din;
-    wire [WIDTH-1:0] dout;
+    reg clk, rst, en_wr, en_rd;
+    reg [WIDTH-1:0] data_wr;
+    wire [WIDTH-1:0] data_rd;
     wire full, empty;
 
     stack #(.WIDTH(WIDTH), .DEPTH_LOG2(DEPTH_LOG2)) uut (
-        .clk(clk), .rst(rst), .push(push), .pop(pop), 
-        .din(din), .dout(dout), .full(full), .empty(empty)
+        .clk(clk), .rst(rst), .en_wr(en_wr), .en_rd(en_rd), 
+        .data_wr(data_wr), .data_rd(data_rd), .full(full), .empty(empty)
     );
 
     initial forever #5 clk = ~clk;
 
     initial begin
-        rst = 1; push = 0; pop = 0; din = 0;
+        rst = 1; en_wr = 0; en_rd = 0; data_wr = 0;
         #15; rst = 0; #10;
 
         $display("Pushing elements...");
@@ -277,17 +279,17 @@ module stack_tb;
 
     task push_data(input [WIDTH-1:0] val);
     begin
-        @(posedge clk); push = 1; din = val;
-        @(posedge clk); push = 0;
+        @(posedge clk); en_wr = 1; data_wr = val;
+        @(posedge clk); en_wr = 0;
         $display("Pushed %h | full=%b empty=%b", val, full, empty);
     end
     endtask
 
     task pop_data();
     begin
-        @(posedge clk); pop = 1;
-        @(posedge clk); pop = 0;
-        $display("Popped %h | full=%b empty=%b", dout, full, empty);
+        @(posedge clk); en_rd = 1;
+        @(posedge clk); en_rd = 0;
+        $display("Popped %h | full=%b empty=%b", data_rd, full, empty);
     end
     endtask
 endmodule

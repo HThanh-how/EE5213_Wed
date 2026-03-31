@@ -7,10 +7,10 @@ module stack_tb;
 
     reg clk;
     reg rst;
-    reg push;
-    reg pop;
-    reg [WIDTH-1:0] din;
-    wire [WIDTH-1:0] dout;
+    reg en_wr;
+    reg en_rd;
+    reg [WIDTH-1:0] data_wr;
+    wire [WIDTH-1:0] data_rd;
     wire full;
     wire empty;
 
@@ -20,10 +20,10 @@ module stack_tb;
     ) uut (
         .clk(clk),
         .rst(rst),
-        .push(push),
-        .pop(pop),
-        .din(din),
-        .dout(dout),
+        .en_wr(en_wr),
+        .en_rd(en_rd),
+        .data_wr(data_wr),
+        .data_rd(data_rd),
         .full(full),
         .empty(empty)
     );
@@ -36,9 +36,9 @@ module stack_tb;
     initial begin
         // Initialize Inputs
         rst = 1;
-        push = 0;
-        pop = 0;
-        din = 0;
+        en_wr = 0;
+        en_rd = 0;
+        data_wr = 0;
 
         // Reset
         #15;
@@ -76,10 +76,10 @@ module stack_tb;
     task push_data(input [WIDTH-1:0] val);
     begin
         @(posedge clk);
-        push = 1;
-        din = val;
+        en_wr = 1;
+        data_wr = val;
         @(posedge clk);
-        push = 0;
+        en_wr = 0;
         $display("Pushed %h | full=%b empty=%b", val, full, empty);
     end
     endtask
@@ -87,10 +87,10 @@ module stack_tb;
     task pop_data();
     begin
         @(posedge clk);
-        pop = 1;
+        en_rd = 1;
         @(posedge clk);
-        pop = 0;
-        $display("Popped %h | full=%b empty=%b", dout, full, empty);
+        en_rd = 0;
+        $display("Popped %h | full=%b empty=%b", data_rd, full, empty);
     end
     endtask
 

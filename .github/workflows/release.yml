@@ -14,13 +14,21 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         
-      - name: Compile LaTeX document
+      - name: Generate Individual LaTeX files
+        run: |
+          sed -e 's/<STUDENT_NAME>/Nguyen Thai Thanh Binh/g' -e 's/<STUDENT_ID>/2570175/g' report.tex > EE5213_Exercise_1_Report_Nguyen_Thai_Thanh_Binh_2570175.tex
+          sed -e 's/<STUDENT_NAME>/Vu Tien Giang/g' -e 's/<STUDENT_ID>/2570188/g' report.tex > EE5213_Exercise_1_Report_Vu_Tien_Giang_2570188.tex
+          sed -e 's/<STUDENT_NAME>/Pham Huy Thanh/g' -e 's/<STUDENT_ID>/2570317/g' report.tex > EE5213_Exercise_1_Report_Pham_Huy_Thanh_2570317.tex
+
+      - name: Compile LaTeX documents
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: report.tex
+          root_file: "EE5213_*.tex"
           
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: report.pdf
+          files: |
+            EE5213_*.pdf
+            docs/ASIC_Exercise1.pdf
           generate_release_notes: true
