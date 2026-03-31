@@ -18,10 +18,16 @@ jobs:
         
       - name: Generate Individual LaTeX files
         run: |
+          # Exercise 1
           sed -e 's/<STUDENT_NAME>/Nguyen Thai Thanh Binh/g' -e 's/<STUDENT_ID>/2570175/g' report.tex > EE5213_Exercise_1_Report_Nguyen_Thai_Thanh_Binh_2570175.tex
           sed -e 's/<STUDENT_NAME>/Vu Tien Giang/g' -e 's/<STUDENT_ID>/2570188/g' report.tex > EE5213_Exercise_1_Report_Vu_Tien_Giang_2570188.tex
           sed -e 's/<STUDENT_NAME>/Pham Huy Thanh/g' -e 's/<STUDENT_ID>/2570317/g' report.tex > EE5213_Exercise_1_Report_Pham_Huy_Thanh_2570317.tex
-          git rm -f report.pdf || true
+          # Exercise 2
+          sed -e 's/<STUDENT_NAME>/Nguyen Thai Thanh Binh/g' -e 's/<STUDENT_ID>/2570175/g' report_ex2.tex > EE5213_Exercise_2_Report_Nguyen_Thai_Thanh_Binh_2570175.tex
+          sed -e 's/<STUDENT_NAME>/Vu Tien Giang/g' -e 's/<STUDENT_ID>/2570188/g' report_ex2.tex > EE5213_Exercise_2_Report_Vu_Tien_Giang_2570188.tex
+          sed -e 's/<STUDENT_NAME>/Pham Huy Thanh/g' -e 's/<STUDENT_ID>/2570317/g' report_ex2.tex > EE5213_Exercise_2_Report_Pham_Huy_Thanh_2570317.tex
+          
+          git rm -f report.pdf report_ex2.pdf || true
           
       - name: Compile LaTeX documents
         uses: xu-cheng/latex-action@v3
