@@ -102,21 +102,23 @@ Design a 5-bit synchronous counter based on the specifications provided and writ
 \begin{lstlisting}[language=Verilog]
 `timescale 1ns / 1ps
 
-module counter (
+module counter #(
+    parameter WIDTH = 5
+) (
     input clk,
     input rst,
     input load,
     input en,
-    input [4:0] cnt_in,
-    output reg [4:0] cnt_out
+    input [WIDTH-1:0] cnt_in,
+    output reg [WIDTH-1:0] cnt_out
 );
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            cnt_out <= 5'b00000;
+            cnt_out <= {WIDTH{1'b0}};
         end else if (load) begin
             cnt_out <= cnt_in;
         end else if (en) begin
-            cnt_out <= cnt_out + 1;
+            cnt_out <= cnt_out + 1'b1;
         end
     end
 endmodule
@@ -129,12 +131,17 @@ To match the precise timestamps detailed in the exercise, the testbench drives i
 `timescale 1ns / 1ps
 
 module counter_tb;
+    parameter WIDTH = 5;
+
     reg clk;
     reg rst, load, en;
-    reg [4:0] cnt_in;
-    wire [4:0] cnt_out;
+    reg [WIDTH-1:0] cnt_in;
+    wire [WIDTH-1:0] cnt_out;
 
-    counter uut (.clk(clk), .rst(rst), .load(load), .en(en), .cnt_in(cnt_in), .cnt_out(cnt_out));
+    counter #(.WIDTH(WIDTH)) uut (
+        .clk(clk), .rst(rst), .load(load), .en(en), 
+        .cnt_in(cnt_in), .cnt_out(cnt_out)
+    );
 
     initial begin
         clk = 0;
