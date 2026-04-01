@@ -67,7 +67,7 @@
 \vspace{1cm}
 
 \begin{tabular}{rl}
-\textbf{Student:} & <STUDENT_NAME> - <STUDENT_ID>\\[0.5cm]
+\textbf{Student:} & Pham Huy Thanh - 2570317\\[0.5cm]
 \end{tabular}
 
 \vspace{1cm}
@@ -220,7 +220,12 @@ module stack #(
         if (rst) begin
             sp <= 0; full <= 0; empty <= 1; data_rd <= 0;
         end else begin
-            if (en_wr && !full) begin
+            if (en_wr && !full && en_rd && !empty) begin
+                // Synchronous concurrent push & pop
+                // Keeps stack pointer, full, empty unchanged
+                mem[sp] <= data_wr;
+                data_rd <= mem[sp - 1];
+            end else if (en_wr && !full) begin
                 mem[sp] <= data_wr;
                 sp <= sp + 1;
                 empty <= 0;
@@ -273,6 +278,13 @@ module stack_tb;
         $display("Trying to pop when empty...");
         pop_data();
         if (empty) $display("Stack is empty, correctly blocked pop.");
+
+        $display("Testing concurrent push and pop...");
+        push_data(8'hAA);
+        push_data(8'hBB);
+        @(posedge clk); en_wr = 1; en_rd = 1; data_wr = 8'hCC;
+        @(posedge clk); en_wr = 0; en_rd = 0;
+        $display("Concurrent push CC, pop -> %h | full=%b empty=%b", data_rd, full, empty);
 
         #20 $finish;
     end

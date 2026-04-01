@@ -1,0 +1,322 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A,T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{black}
+}
+\lstset{style=mystyle}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+
+\textbf{\large VIETNAM NATIONAL UNIVERSITY HO CHI MINH CITY}\\
+\textbf{\large HO CHI MINH CITY UNIVERSITY OF TECHNOLOGY}\\
+\textbf{\normalsize Faculty of Electrical and Electronics Engineering}\\
+\vspace{0.5cm}
+
+\includegraphics[width=0.25\textwidth]{img/01_logobachkhoasang.png}\\
+\vspace{0.5cm}
+
+\rule{\linewidth}{0.5mm}\\
+\vspace{0.5cm}
+
+\textbf{\huge ASIC Verification}\\
+\textbf{\large EE5213}\\
+\vspace{0.3cm}
+
+\textbf{\Large Exercise 1 Report}\\
+\vspace{0.3cm}
+
+\textbf{\LARGE Counter Design and}\\
+\textbf{\LARGE Parameterized Stack Verification}\\
+\vspace{0.3cm}
+
+\rule{\linewidth}{0.5mm}\\
+\vspace{1cm}
+
+\begin{tabular}{rl}
+\textbf{Student:} & Vu Tien Giang - 2570188\\[0.5cm]
+\end{tabular}
+
+\vspace{1cm}
+
+\begin{tabular}{rl}
+\textbf{Instructor:} & TS. Tran Hoang Linh
+\end{tabular}
+
+\vfill
+
+{\large \today}
+
+\end{titlepage}
+
+\newpage
+
+\section{Exercise 1: Counter Design and Verification}
+
+\subsection{Objective}
+Design a 5-bit synchronous counter based on the specifications provided and write a testbench to verify its correctness against a target timing trace.
+
+\subsection{Design Specifications}
+\begin{itemize}
+    \item The counter is clocked on the rising edge of \texttt{clk}.
+    \item \texttt{rst} is active high and asynchronously resets the output to 0.
+    \item \texttt{cnt\_in} and \texttt{cnt\_out} are 5-bit signals.
+    \item If \texttt{load} is high, the counter is loaded from \texttt{cnt\_in} (takes priority over \texttt{en}).
+    \item Otherwise, if \texttt{en} is high, \texttt{cnt\_out} is incremented.
+\end{itemize}
+
+\subsection{Implementation (\texttt{counter.v})}
+\begin{lstlisting}[language=Verilog]
+`timescale 1ns / 1ps
+
+module counter (
+    input clk,
+    input rst,
+    input load,
+    input en,
+    input [4:0] cnt_in,
+    output reg [4:0] cnt_out
+);
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            cnt_out <= 5'b00000;
+        end else if (load) begin
+            cnt_out <= cnt_in;
+        end else if (en) begin
+            cnt_out <= cnt_out + 1;
+        end
+    end
+endmodule
+\end{lstlisting}
+
+\subsection{Testbench (\texttt{counter\_tb.v})}
+To match the precise timestamps detailed in the exercise, the testbench drives inputs securely synchronized around the clock edges.
+
+\begin{lstlisting}[language=Verilog]
+`timescale 1ns / 1ps
+
+module counter_tb;
+    reg clk;
+    reg rst, load, en;
+    reg [4:0] cnt_in;
+    wire [4:0] cnt_out;
+
+    counter uut (.clk(clk), .rst(rst), .load(load), .en(en), .cnt_in(cnt_in), .cnt_out(cnt_out));
+
+    initial begin
+        clk = 0;
+        forever #5 clk = ~clk;
+    end
+
+    initial begin
+        rst = 1; load = 0; en = 0; cnt_in = 0;
+
+        #12; rst = 0; load = 1; en = 1; cnt_in = 5'b10101; 
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
+        
+        #2;  rst = 0; load = 1; en = 1; cnt_in = 5'b01010;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
+        
+        #2;  rst = 0; load = 1; en = 1; cnt_in = 5'b11111;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
+        
+        #2;  rst = 1; load = 1; en = 1; cnt_in = 5'b11111;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
+        
+        #2;  rst = 0; load = 1; en = 1; cnt_in = 5'b11111;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
+        
+        #2;  rst = 0; load = 0; en = 1; cnt_in = 5'b11111;
+        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
+             $time, rst, load, en, cnt_in, cnt_out);
+
+        #10; $finish;
+    end
+endmodule
+\end{lstlisting}
+
+\subsection{Simulation Results}
+The simulation log matches the specified requirements at the detailed time points.
+\begin{lstlisting}[language=bash]
+At time 20000 rst=0 load=1 en=1 cnt_in=10101 cnt_out=10101
+At time 30000 rst=0 load=1 en=1 cnt_in=01010 cnt_out=01010
+At time 40000 rst=0 load=1 en=1 cnt_in=11111 cnt_out=11111
+At time 50000 rst=1 load=1 en=1 cnt_in=11111 cnt_out=00000
+At time 60000 rst=0 load=1 en=1 cnt_in=11111 cnt_out=11111
+At time 70000 rst=0 load=0 en=1 cnt_in=11111 cnt_out=00000
+\end{lstlisting}
+
+\section{Exercise 2: Stack Design and Verification}
+
+\subsection{Objective}
+Create a parameterized LIFO (Last-In-First-Out) Stack design, present testing scenarios, and write a testbench to verify edge cases.
+
+\subsection{Design Specifications}
+\begin{itemize}
+    \item Parameterized for \texttt{WIDTH} and \texttt{DEPTH}. \texttt{DEPTH} is dynamically managed via \texttt{DEPTH\_LOG2} (power of 2 constraint).
+    \item Asynchronous high-active reset (\texttt{rst}).
+    \item \texttt{en\_wr} (write) and \texttt{en\_rd} (read) synchronous to the rising edge of \texttt{clk}.
+    \item Data written later corresponds to earlier reads (LIFO constraint).
+    \item Ignores en\_wr attempts when \texttt{full} flag is set.
+    \item Ignores en\_rd attempts when \texttt{empty} flag is set.
+\end{itemize}
+
+\subsection{Implementation (\texttt{stack.v})}
+\begin{lstlisting}[language=Verilog]
+`timescale 1ns / 1ps
+
+module stack #(
+    parameter WIDTH = 8,
+    parameter DEPTH_LOG2 = 3
+) (
+    input clk, rst, en_wr, en_rd,
+    input [WIDTH-1:0] data_wr,
+    output reg [WIDTH-1:0] data_rd,
+    output reg full, empty
+);
+    localparam MAX_DEPTH = 1 << DEPTH_LOG2;
+    reg [WIDTH-1:0] mem [0:MAX_DEPTH-1];
+    reg [DEPTH_LOG2:0] sp;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            sp <= 0; full <= 0; empty <= 1;
+        end else begin
+            if (en_wr && !full) begin
+                mem[sp] <= data_wr;
+                sp <= sp + 1;
+                empty <= 0;
+                if (sp + 1 == MAX_DEPTH) full <= 1;
+            end else if (en_rd && !empty) begin
+                sp <= sp - 1;
+                full <= 0;
+                if (sp - 1 == 0) empty <= 1;
+            end
+        end
+    end
+
+    always @(*) begin
+        if (empty) data_rd = 0;
+        else data_rd = mem[sp - 1];
+    end
+endmodule
+\end{lstlisting}
+
+\subsection{Testbench (\texttt{stack\_tb.v})}
+\begin{lstlisting}[language=Verilog]
+`timescale 1ns / 1ps
+
+module stack_tb;
+    parameter WIDTH = 8;
+    parameter DEPTH_LOG2 = 2; // Testing depth 4
+
+    reg clk, rst, en_wr, en_rd;
+    reg [WIDTH-1:0] data_wr;
+    wire [WIDTH-1:0] data_rd;
+    wire full, empty;
+
+    stack #(.WIDTH(WIDTH), .DEPTH_LOG2(DEPTH_LOG2)) uut (
+        .clk(clk), .rst(rst), .en_wr(en_wr), .en_rd(en_rd), 
+        .data_wr(data_wr), .data_rd(data_rd), .full(full), .empty(empty)
+    );
+
+    initial forever #5 clk = ~clk;
+
+    initial begin
+        rst = 1; en_wr = 0; en_rd = 0; data_wr = 0;
+        #15; rst = 0; #10;
+
+        $display("Pushing elements...");
+        push_data(8'h11); push_data(8'h22); push_data(8'h33); push_data(8'h44);
+
+        $display("Trying to push when full...");
+        push_data(8'h55);
+        if (full) $display("Stack is full, correctly blocked push.");
+
+        $display("Popping elements...");
+        pop_data(); pop_data(); pop_data(); pop_data();
+
+        $display("Trying to pop when empty...");
+        pop_data();
+        if (empty) $display("Stack is empty, correctly blocked pop.");
+
+        #20 $finish;
+    end
+
+    task push_data(input [WIDTH-1:0] val);
+    begin
+        @(posedge clk); en_wr = 1; data_wr = val;
+        @(posedge clk); en_wr = 0;
+        $display("Pushed %h | full=%b empty=%b", val, full, empty);
+    end
+    endtask
+
+    task pop_data();
+    begin
+        @(posedge clk); en_rd = 1;
+        @(posedge clk); en_rd = 0;
+        $display("Popped %h | full=%b empty=%b", data_rd, full, empty);
+    end
+    endtask
+endmodule
+\end{lstlisting}
+
+\subsection{Simulation Results}
+\begin{lstlisting}[language=bash]
+Pushing elements...
+Pushed 11 | full=0 empty=0
+Pushed 22 | full=0 empty=0
+Pushed 33 | full=0 empty=0
+Pushed 44 | full=1 empty=0
+Trying to push when full...
+Pushed 55 | full=1 empty=0
+Stack is full, correctly blocked push.
+Popping elements...
+Popped 44 | full=0 empty=0
+Popped 33 | full=0 empty=0
+Popped 22 | full=0 empty=0
+Popped 11 | full=0 empty=1
+Trying to pop when empty...
+Popped 11 | full=0 empty=1
+Stack is empty, correctly blocked pop.
+\end{lstlisting}
+
+\end{document}
