@@ -182,80 +182,58 @@ The initial state set is $I = \{S_0\}$. The state diagram is shown in Figure \re
 
 \textbf{Final Result:} $ARS = \{S_0, S_1, S_2, S_3, S_4, S_5\}$
 
-\subsection{Implementation (\texttt{fsm\_reachability.cpp})}
-\begin{lstlisting}[language=C++]
-#include <iostream>
-#include <vector>
-#include <set>
-#include <map>
-#include <algorithm>
+\subsection{Implementation (\texttt{fsm\_reachability.py})}
+\begin{lstlisting}[language=Python]
+def print_set(name, s):
+    states = " ".join([f"S{val}" for val in sorted(s)])
+    print(f"{name} = {{ {states} }}")
 
-typedef int State;
+def reachability(R, I):
+    ARS = set(I)  # All Reached States
+    NNS = set(I)  # New Next States (Frontier Set)
+    iteration = 1
 
-void print_set(const std::string& name, const std::set<State>& s) {
-    std::cout << name << " = { ";
-    for (State val : s) std::cout << "S" << val << " ";
-    std::cout << "}\n";
-}
+    print("--- Initialization ---")
+    print_set("ARS", ARS)
+    print_set("NNS", NNS)
 
-std::set<State> Reachability(
-    const std::map<State, std::set<State>>& R,
-    const std::set<State>& I
-) {
-    std::set<State> ARS = I;  // All Reached States
-    std::set<State> NNS = I;  // New Next States (Frontier Set)
-    int iteration = 1;
+    while True:
+        print(f"\n--- Iteration {iteration} ---")
+        iteration += 1
+        
+        NS = set()
+        for s in NNS:
+            if s in R:
+                NS.update(R[s])
+                
+        print_set("NS ", NS)
 
-    std::cout << "--- Initialization ---\n";
-    print_set("ARS", ARS);
-    print_set("NNS", NNS);
+        # new_NNS represents newly discovered states
+        new_NNS = NS - ARS
+        NNS = new_NNS
+        print_set("NNS", NNS)
 
-    while (true) {
-        std::cout << "\n--- Iteration " << iteration++ << " ---\n";
-        std::set<State> NS; 
-        for (State s : NNS) {
-            if (R.find(s) != R.end()) {
-                for (State next_s : R.at(s)) {
-                    NS.insert(next_s);
-                }
-            }
-        }
-        print_set("NS ", NS);
+        if not NNS:
+            print("NNS is empty. Terminating.")
+            break
+            
+        ARS.update(NNS)
+        print_set("ARS", ARS)
 
-        std::set<State> new_NNS;
-        std::set_difference(
-            NS.begin(), NS.end(),
-            ARS.begin(), ARS.end(),
-            std::inserter(new_NNS, new_NNS.begin())
-        );
-        NNS = new_NNS;
-        print_set("NNS", NNS);
+    return ARS
 
-        if (NNS.empty()) {
-            std::cout << "NNS is empty. Terminating.\n";
-            break;
-        }
-        ARS.insert(NNS.begin(), NNS.end());
-        print_set("ARS", ARS);
+if __name__ == "__main__":
+    transition_relation = {
+        0: {1, 5}, 1: {2}, 5: {5, 2},
+        2: {3}, 3: {4}, 4: set()
     }
-    return ARS;
-}
-
-int main() {
-    std::map<State, std::set<State>> transition_relation = {
-        {0, {1, 5}}, {1, {2}}, {5, {5, 2}},
-        {2, {3}}, {3, {4}}, {4, {}}
-    };
-    std::set<State> initial_states = {0};
+    initial_states = {0}
     
-    std::cout << "Starting Reachability Analysis...\n\n";
-    std::set<State> reachable_states = Reachability(transition_relation, initial_states);
+    print("Starting Reachability Analysis...\n")
+    reachable_states = reachability(transition_relation, initial_states)
 
-    std::cout << "\nFinal Reachable States (ARS): { ";
-    for (State s : reachable_states) std::cout << "S" << s << " ";
-    std::cout << "}\n";
-    return 0;
-}
+    states = " ".join([f"S{val}" for val in sorted(reachable_states)])
+    print(f"\nFinal Reachable States (ARS): {{ {states} }}")
 \end{lstlisting}
 
 \subsection{Execution Results}
