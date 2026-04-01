@@ -34,12 +34,6 @@ jobs:
         with:
           root_file: "EE5213_*.tex"
           
-      - name: Commit and Push PDF
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "docs(pdf): generate individual student reports via GitHub Actions"
-          file_pattern: "*.pdf"
-          
       - name: Upload PDF Artifacts
         uses: actions/upload-artifact@v4
         with:
