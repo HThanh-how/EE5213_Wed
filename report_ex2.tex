@@ -5,6 +5,8 @@
 \usepackage{geometry}
 \geometry{a4paper, margin=1in}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{automata, positioning, arrows.meta}
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{hyperref}
@@ -101,6 +103,84 @@ Implement the State Reachability Analysis algorithm for an arbitrary Finite Stat
         \item Terminate when the frontier is empty.
     \end{itemize}
 \end{itemize}
+
+\subsection{Example FSM Analysis}
+
+To illustrate the algorithm, consider the FSM defined in the implementation with the following transition relations:
+\begin{itemize}
+    \item $S_0 \rightarrow \{S_1, S_5\}$
+    \item $S_1 \rightarrow \{S_2\}$
+    \item $S_5 \rightarrow \{S_5, S_2\}$
+    \item $S_2 \rightarrow \{S_3\}$
+    \item $S_3 \rightarrow \{S_4\}$
+    \item $S_4 \rightarrow \emptyset$
+\end{itemize}
+
+The initial state set is $I = \{S_0\}$. The state diagram is shown in Figure \ref{fig:fsm}.
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}[>={Stealth[length=2.5mm]}, shorten >=1pt, node distance=2.5cm, on grid, auto, thick]
+       \node[state, initial, initial text=] (0) {$S_0$};
+       \node[state] (1) [above right=of 0] {$S_1$};
+       \node[state] (5) [below right=of 0] {$S_5$};
+       \node[state] (2) [below right=of 1] {$S_2$};
+       \node[state] (3) [right=of 2] {$S_3$};
+       \node[state] (4) [right=of 3] {$S_4$};
+
+       \path[->] 
+        (0) edge node {} (1)
+            edge node {} (5)
+        (1) edge node {} (2)
+        (5) edge [loop below] node {} (5)
+            edge node {} (2)
+        (2) edge node {} (3)
+        (3) edge node {} (4);
+    \end{tikzpicture}
+    \caption{State Diagram of the Example FSM}
+    \label{fig:fsm}
+\end{figure}
+
+\textbf{Step-by-Step Execution:}
+\begin{enumerate}
+    \item \textbf{Initialization:}
+    \begin{itemize}
+        \item $ARS = \{S_0\}$
+        \item Frontier $NNS = \{S_0\}$
+    \end{itemize}
+    \item \textbf{Iteration 1:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \{S_1, S_5\}$
+        \item Compute new frontier: $NNS = NS \setminus ARS = \{S_1, S_5\} \setminus \{S_0\} = \{S_1, S_5\}$
+        \item Update $ARS$: $ARS = ARS \cup NNS = \{S_0, S_1, S_5\}$
+    \end{itemize}
+    \item \textbf{Iteration 2:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \{S_2, S_5\}$ (from $S_1 \rightarrow S_2$ and $S_5 \rightarrow S_2, S_5$)
+        \item Compute new frontier: $NNS = NS \setminus ARS = \{S_2, S_5\} \setminus \{S_0, S_1, S_5\} = \{S_2\}$
+        \item Update $ARS$: $ARS = ARS \cup NNS = \{S_0, S_1, S_2, S_5\}$
+    \end{itemize}
+    \item \textbf{Iteration 3:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \{S_3\}$ (from $S_2 \rightarrow S_3$)
+        \item Compute new frontier: $NNS = NS \setminus ARS = \{S_3\} \setminus \{S_0, S_1, S_2, S_5\} = \{S_3\}$
+        \item Update $ARS$: $ARS = ARS \cup NNS = \{S_0, S_1, S_2, S_3, S_5\}$
+    \end{itemize}
+    \item \textbf{Iteration 4:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \{S_4\}$ (from $S_3 \rightarrow S_4$)
+        \item Compute new frontier: $NNS = NS \setminus ARS = \{S_4\} \setminus \{S_0, S_1, S_2, S_3, S_5\} = \{S_4\}$
+        \item Update $ARS$: $ARS = ARS \cup NNS = \{S_0, S_1, S_2, S_3, S_4, S_5\}$
+    \end{itemize}
+    \item \textbf{Iteration 5:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \emptyset$ (from $S_4 \rightarrow \emptyset$)
+        \item Compute new frontier: $NNS = NS \setminus ARS = \emptyset \setminus ARS = \emptyset$
+        \item The frontier $NNS$ is empty, so the algorithm terminates.
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Final Result:} $ARS = \{S_0, S_1, S_2, S_3, S_4, S_5\}$
 
 \subsection{Implementation (\texttt{fsm\_reachability.cpp})}
 \begin{lstlisting}[language=C++]
