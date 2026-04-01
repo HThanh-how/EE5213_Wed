@@ -192,14 +192,26 @@ The initial state set is $I = \{S_0\}$. The state diagram is shown in Figure \re
 
 typedef int State;
 
+void print_set(const std::string& name, const std::set<State>& s) {
+    std::cout << name << " = { ";
+    for (State val : s) std::cout << "S" << val << " ";
+    std::cout << "}\n";
+}
+
 std::set<State> Reachability(
     const std::map<State, std::set<State>>& R,
     const std::set<State>& I
 ) {
     std::set<State> ARS = I;  // All Reached States
     std::set<State> NNS = I;  // New Next States (Frontier Set)
+    int iteration = 1;
+
+    std::cout << "--- Initialization ---\n";
+    print_set("ARS", ARS);
+    print_set("NNS", NNS);
 
     while (true) {
+        std::cout << "\n--- Iteration " << iteration++ << " ---\n";
         std::set<State> NS; 
         for (State s : NNS) {
             if (R.find(s) != R.end()) {
@@ -208,6 +220,7 @@ std::set<State> Reachability(
                 }
             }
         }
+        print_set("NS ", NS);
 
         std::set<State> new_NNS;
         std::set_difference(
@@ -216,11 +229,14 @@ std::set<State> Reachability(
             std::inserter(new_NNS, new_NNS.begin())
         );
         NNS = new_NNS;
+        print_set("NNS", NNS);
 
         if (NNS.empty()) {
+            std::cout << "NNS is empty. Terminating.\n";
             break;
         }
         ARS.insert(NNS.begin(), NNS.end());
+        print_set("ARS", ARS);
     }
     return ARS;
 }
@@ -231,9 +247,11 @@ int main() {
         {2, {3}}, {3, {4}}, {4, {}}
     };
     std::set<State> initial_states = {0};
+    
+    std::cout << "Starting Reachability Analysis...\n\n";
     std::set<State> reachable_states = Reachability(transition_relation, initial_states);
 
-    std::cout << "Final Reachable States (ARS): { ";
+    std::cout << "\nFinal Reachable States (ARS): { ";
     for (State s : reachable_states) std::cout << "S" << s << " ";
     std::cout << "}\n";
     return 0;
@@ -243,7 +261,35 @@ int main() {
 \subsection{Execution Results}
 \begin{lstlisting}[language=bash]
 Starting Reachability Analysis...
-Initial States: { S0 }
+
+--- Initialization ---
+ARS = { S0 }
+NNS = { S0 }
+
+--- Iteration 1 ---
+NS  = { S1 S5 }
+NNS = { S1 S5 }
+ARS = { S0 S1 S5 }
+
+--- Iteration 2 ---
+NS  = { S2 S5 }
+NNS = { S2 }
+ARS = { S0 S1 S2 S5 }
+
+--- Iteration 3 ---
+NS  = { S3 }
+NNS = { S3 }
+ARS = { S0 S1 S2 S3 S5 }
+
+--- Iteration 4 ---
+NS  = { S4 }
+NNS = { S4 }
+ARS = { S0 S1 S2 S3 S4 S5 }
+
+--- Iteration 5 ---
+NS  = { }
+NNS = { }
+NNS is empty. Terminating.
 
 Final Reachable States (ARS): { S0 S1 S2 S3 S4 S5 }
 \end{lstlisting}
