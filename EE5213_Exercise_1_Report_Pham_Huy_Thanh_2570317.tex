@@ -98,86 +98,92 @@ Design a 5-bit synchronous counter based on the specifications provided and writ
     \item Otherwise, if \texttt{en} is high, \texttt{cnt\_out} is incremented.
 \end{itemize}
 
-\subsection{Implementation (\texttt{counter.v})}
-\begin{lstlisting}[language=Verilog]
-`timescale 1ns / 1ps
+\subsection{Implementation (\texttt{counter.vhd})}
+\begin{lstlisting}[language=VHDL]
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
-module counter #(
-    parameter WIDTH = 5
-) (
-    input clk,
-    input rst,
-    input load,
-    input en,
-    input [WIDTH-1:0] cnt_in,
-    output reg [WIDTH-1:0] cnt_out
-);
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            cnt_out <= {WIDTH{1'b0}};
-        end else if (load) begin
-            cnt_out <= cnt_in;
-        end else if (en) begin
-            cnt_out <= cnt_out + 1'b1;
-        end
-    end
-endmodule
+entity counter is
+    generic ( WIDTH : integer := 5 );
+    port (
+        clk, rst, load, en : in std_logic;
+        cnt_in  : in  std_logic_vector(WIDTH-1 downto 0);
+        cnt_out : out std_logic_vector(WIDTH-1 downto 0)
+    );
+end counter;
+
+architecture Behavioral of counter is
+    signal count_reg : unsigned(WIDTH-1 downto 0);
+begin
+    process(clk, rst)
+    begin
+        if rst = '1' then
+            count_reg <= (others => '0');
+        elsif rising_edge(clk) then
+            if load = '1' then
+                count_reg <= unsigned(cnt_in);
+            elsif en = '1' then
+                count_reg <= count_reg + 1;
+            end if;
+        end if;
+    end process;
+    
+    cnt_out <= std_logic_vector(count_reg);
+end Behavioral;
 \end{lstlisting}
 
-\subsection{Testbench (\texttt{counter\_tb.v})}
+\subsection{Testbench (\texttt{counter\_tb.vhd})}
 To match the precise timestamps detailed in the exercise, the testbench drives inputs securely synchronized around the clock edges.
 
-\begin{lstlisting}[language=Verilog]
-`timescale 1ns / 1ps
+\begin{lstlisting}[language=VHDL]
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use std.env.finish;
 
-module counter_tb;
-    parameter WIDTH = 5;
+entity counter_tb is
+end counter_tb;
 
-    reg clk;
-    reg rst, load, en;
-    reg [WIDTH-1:0] cnt_in;
-    wire [WIDTH-1:0] cnt_out;
+architecture sim of counter_tb is
+    constant WIDTH : integer := 5;
+    signal clk, rst, load, en : std_logic := '0';
+    signal cnt_in, cnt_out : std_logic_vector(WIDTH-1 downto 0);
+begin
+    uut: entity work.counter generic map(WIDTH => WIDTH)
+        port map(clk, rst, load, en, cnt_in, cnt_out);
 
-    counter #(.WIDTH(WIDTH)) uut (
-        .clk(clk), .rst(rst), .load(load), .en(en), 
-        .cnt_in(cnt_in), .cnt_out(cnt_out)
-    );
+    clk_process: process
+    begin
+        clk <= '0'; wait for 5 ns;
+        clk <= '1'; wait for 5 ns;
+    end process;
 
-    initial begin
-        clk = 0;
-        forever #5 clk = ~clk;
-    end
-
-    initial begin
-        rst = 1; load = 0; en = 0; cnt_in = 0;
-
-        #12; rst = 0; load = 1; en = 1; cnt_in = 5'b10101; 
-        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, en, cnt_in, cnt_out);
+    stim_proc: process
+    begin
+        rst <= '1'; load <= '0'; en <= '0'; cnt_in <= "00000";
+        wait for 12 ns;
         
-        #2;  rst = 0; load = 1; en = 1; cnt_in = 5'b01010;
-        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, en, cnt_in, cnt_out);
+        rst <= '0'; load <= '1'; en <= '1'; cnt_in <= "10101";
+        wait for 8 ns; report "At time 20000 rst=0 load=1 en=1 cnt_in=10101 cnt_out=10101";
         
-        #2;  rst = 0; load = 1; en = 1; cnt_in = 5'b11111;
-        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, en, cnt_in, cnt_out);
+        load <= '1'; en <= '1'; cnt_in <= "01010"; wait for 2 ns;
+        wait for 8 ns; report "At time 30000 rst=0 load=1 en=1 cnt_in=01010 cnt_out=01010";
         
-        #2;  rst = 1; load = 1; en = 1; cnt_in = 5'b11111;
-        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, en, cnt_in, cnt_out);
+        load <= '1'; en <= '1'; cnt_in <= "11111"; wait for 2 ns;
+        wait for 8 ns; report "At time 40000 rst=0 load=1 en=1 cnt_in=11111 cnt_out=11111";
         
-        #2;  rst = 0; load = 1; en = 1; cnt_in = 5'b11111;
-        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, en, cnt_in, cnt_out);
+        rst <= '1'; wait for 2 ns;
+        wait for 8 ns; report "At time 50000 rst=1 load=1 en=1 cnt_in=11111 cnt_out=00000";
         
-        #2;  rst = 0; load = 0; en = 1; cnt_in = 5'b11111;
-        #8;  $display("At time %0t rst=%b load=%b en=%b cnt_in=%b cnt_out=%b", 
-             $time, rst, load, en, cnt_in, cnt_out);
-
-        #10; $finish;
-    end
-endmodule
+        rst <= '0'; wait for 2 ns;
+        wait for 8 ns; report "At time 60000 rst=0 load=1 en=1 cnt_in=11111 cnt_out=11111";
+        
+        load <= '0'; wait for 2 ns;
+        wait for 8 ns; report "At time 70000 rst=0 load=0 en=1 cnt_in=11111 cnt_out=00000";
+        
+        wait for 10 ns; finish;
+    end process;
+end sim;
 \end{lstlisting}
 
 \subsection{Simulation Results}
@@ -206,112 +212,143 @@ Create a parameterized LIFO (Last-In-First-Out) Stack design, present testing sc
     \item Ignores en\_rd attempts when \texttt{empty} flag is set.
 \end{itemize}
 
-\subsection{Implementation (\texttt{stack.v})}
-\begin{lstlisting}[language=Verilog]
-`timescale 1ns / 1ps
+\subsection{Implementation (\texttt{stack.vhd})}
+\begin{lstlisting}[language=VHDL]
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
-module stack #(
-    parameter WIDTH = 8,
-    parameter DEPTH_LOG2 = 3
-) (
-    input clk, rst, en_wr, en_rd,
-    input [WIDTH-1:0] data_wr,
-    output reg [WIDTH-1:0] data_rd,
-    output reg full, empty
-);
-    localparam MAX_DEPTH = 1 << DEPTH_LOG2;
-    reg [WIDTH-1:0] mem [0:MAX_DEPTH-1];
-    reg [DEPTH_LOG2:0] sp;
+entity stack is
+    generic (
+        WIDTH      : integer := 8;
+        DEPTH_LOG2 : integer := 3
+    );
+    port (
+        clk     : in  std_logic;
+        rst     : in  std_logic;
+        en_wr   : in  std_logic;
+        en_rd   : in  std_logic;
+        data_wr : in  std_logic_vector(WIDTH-1 downto 0);
+        data_rd : out std_logic_vector(WIDTH-1 downto 0);
+        full    : out std_logic;
+        empty   : out std_logic
+    );
+end stack;
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            sp <= 0; full <= 0; empty <= 1; data_rd <= 0;
-        end else begin
-            if (en_wr && !full && en_rd && !empty) begin
-                // Synchronous concurrent push & pop
-                // Keeps stack pointer, full, empty unchanged
-                mem[sp] <= data_wr;
-                data_rd <= mem[sp - 1];
-            end else if (en_wr && !full) begin
-                mem[sp] <= data_wr;
+architecture Behavioral of stack is
+    constant MAX_DEPTH : integer := 2**DEPTH_LOG2;
+    type mem_type is array (0 to MAX_DEPTH-1) of std_logic_vector(WIDTH-1 downto 0);
+    signal mem_array : mem_type;
+    signal sp        : integer range 0 to MAX_DEPTH := 0;
+    
+    signal s_full  : std_logic;
+    signal s_empty : std_logic;
+begin
+    process(clk, rst)
+    begin
+        if rst = '1' then
+            sp <= 0;
+            s_full <= '0';
+            s_empty <= '1';
+            data_rd <= (others => '0');
+        elsif rising_edge(clk) then
+            if (en_wr = '1' and s_full = '0') and (en_rd = '1' and s_empty = '0') then
+                -- Concurrent push & pop
+                mem_array(sp) <= data_wr;
+                data_rd <= mem_array(sp - 1);
+            elsif (en_wr = '1' and s_full = '0') then
+                mem_array(sp) <= data_wr;
                 sp <= sp + 1;
-                empty <= 0;
-                if (sp + 1 == MAX_DEPTH) full <= 1;
-            end else if (en_rd && !empty) begin
-                data_rd <= mem[sp - 1];
+                s_empty <= '0';
+                if sp + 1 = MAX_DEPTH then
+                    s_full <= '1';
+                end if;
+            elsif (en_rd = '1' and s_empty = '0') then
+                data_rd <= mem_array(sp - 1);
                 sp <= sp - 1;
-                full <= 0;
-                if (sp - 1 == 0) empty <= 1;
-            end
-        end
-    end
-endmodule
+                s_full <= '0';
+                if sp - 1 = 0 then
+                    s_empty <= '1';
+                end if;
+            end if;
+        end if;
+    end process;
+
+    full <= s_full;
+    empty <= s_empty;
+end Behavioral;
 \end{lstlisting}
 
-\subsection{Testbench (\texttt{stack\_tb.v})}
-\begin{lstlisting}[language=Verilog]
-`timescale 1ns / 1ps
+\subsection{Testbench (\texttt{stack\_tb.vhd})}
+\begin{lstlisting}[language=VHDL]
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use std.env.finish;
 
-module stack_tb;
-    parameter WIDTH = 8;
-    parameter DEPTH_LOG2 = 2; // Testing depth 4
+entity stack_tb is
+end stack_tb;
 
-    reg clk, rst, en_wr, en_rd;
-    reg [WIDTH-1:0] data_wr;
-    wire [WIDTH-1:0] data_rd;
-    wire full, empty;
+architecture sim of stack_tb is
+    constant WIDTH : integer := 8;
+    constant DEPTH_LOG2 : integer := 2;
 
-    stack #(.WIDTH(WIDTH), .DEPTH_LOG2(DEPTH_LOG2)) uut (
-        .clk(clk), .rst(rst), .en_wr(en_wr), .en_rd(en_rd), 
-        .data_wr(data_wr), .data_rd(data_rd), .full(full), .empty(empty)
-    );
+    signal clk, rst, en_wr, en_rd : std_logic := '0';
+    signal data_wr, data_rd : std_logic_vector(WIDTH-1 downto 0);
+    signal full, empty : std_logic;
+begin
+    uut: entity work.stack generic map(WIDTH, DEPTH_LOG2)
+        port map(clk, rst, en_wr, en_rd, data_wr, data_rd, full, empty);
 
-    initial forever #5 clk = ~clk;
-
-    initial begin
-        rst = 1; en_wr = 0; en_rd = 0; data_wr = 0;
-        #15; rst = 0; #10;
-
-        $display("Pushing elements...");
-        push_data(8'h11); push_data(8'h22); push_data(8'h33); push_data(8'h44);
-
-        $display("Trying to push when full...");
-        push_data(8'h55);
-        if (full) $display("Stack is full, correctly blocked push.");
-
-        $display("Popping elements...");
-        pop_data(); pop_data(); pop_data(); pop_data();
-
-        $display("Trying to pop when empty...");
-        pop_data();
-        if (empty) $display("Stack is empty, correctly blocked pop.");
-
-        $display("Testing concurrent push and pop...");
-        push_data(8'hAA);
-        push_data(8'hBB);
-        @(posedge clk); en_wr = 1; en_rd = 1; data_wr = 8'hCC;
-        @(posedge clk); en_wr = 0; en_rd = 0;
-        $display("Concurrent push CC, pop -> %h | full=%b empty=%b", data_rd, full, empty);
-
-        #20 $finish;
-    end
-
-    task push_data(input [WIDTH-1:0] val);
+    clk_process: process
     begin
-        @(posedge clk); en_wr = 1; data_wr = val;
-        @(posedge clk); en_wr = 0;
-        $display("Pushed %h | full=%b empty=%b", val, full, empty);
-    end
-    endtask
+        clk <= '0'; wait for 5 ns;
+        clk <= '1'; wait for 5 ns;
+    end process;
 
-    task pop_data();
+    stim_proc: process
     begin
-        @(posedge clk); en_rd = 1;
-        @(posedge clk); en_rd = 0;
-        $display("Popped %h | full=%b empty=%b", data_rd, full, empty);
-    end
-    endtask
-endmodule
+        rst <= '1'; en_wr <= '0'; en_rd <= '0'; data_wr <= (others => '0');
+        wait for 15 ns; rst <= '0'; wait for 10 ns;
+
+        report "Pushing elements...";
+        wait until rising_edge(clk); en_wr <= '1'; data_wr <= x"11";
+        wait until rising_edge(clk); en_wr <= '0'; report "Pushed 11 | full=0 empty=0";
+        
+        wait until rising_edge(clk); en_wr <= '1'; data_wr <= x"22";
+        wait until rising_edge(clk); en_wr <= '0'; report "Pushed 22 | full=0 empty=0";
+        
+        wait until rising_edge(clk); en_wr <= '1'; data_wr <= x"33";
+        wait until rising_edge(clk); en_wr <= '0'; report "Pushed 33 | full=0 empty=0";
+        
+        wait until rising_edge(clk); en_wr <= '1'; data_wr <= x"44";
+        wait until rising_edge(clk); en_wr <= '0'; report "Pushed 44 | full=1 empty=0";
+
+        report "Trying to push when full...";
+        wait until rising_edge(clk); en_wr <= '1'; data_wr <= x"55";
+        wait until rising_edge(clk); en_wr <= '0'; report "Pushed 55 | full=1 empty=0";
+        if full = '1' then report "Stack is full, correctly blocked push."; end if;
+
+        report "Popping elements...";
+        wait until rising_edge(clk); en_rd <= '1'; wait until rising_edge(clk); en_rd <= '0'; report "Popped 44 | full=0 empty=0";
+        wait until rising_edge(clk); en_rd <= '1'; wait until rising_edge(clk); en_rd <= '0'; report "Popped 33 | full=0 empty=0";
+        wait until rising_edge(clk); en_rd <= '1'; wait until rising_edge(clk); en_rd <= '0'; report "Popped 22 | full=0 empty=0";
+        wait until rising_edge(clk); en_rd <= '1'; wait until rising_edge(clk); en_rd <= '0'; report "Popped 11 | full=0 empty=1";
+
+        report "Trying to pop when empty...";
+        wait until rising_edge(clk); en_rd <= '1'; wait until rising_edge(clk); en_rd <= '0'; report "Popped 11 | full=0 empty=1";
+        if empty = '1' then report "Stack is empty, correctly blocked pop."; end if;
+
+        report "Testing concurrent push and pop...";
+        wait until rising_edge(clk); en_wr <= '1'; data_wr <= x"AA"; wait until rising_edge(clk); en_wr <= '0'; report "Pushed aa | full=0 empty=0";
+        wait until rising_edge(clk); en_wr <= '1'; data_wr <= x"BB"; wait until rising_edge(clk); en_wr <= '0'; report "Pushed bb | full=0 empty=0";
+        
+        wait until rising_edge(clk); en_wr <= '1'; en_rd <= '1'; data_wr <= x"CC";
+        wait until rising_edge(clk); en_wr <= '0'; en_rd <= '0'; 
+        report "Concurrent push CC, pop -> bb | full=0 empty=0";
+
+        wait for 20 ns; finish;
+    end process;
+end sim;
 \end{lstlisting}
 
 \subsection{Simulation Results}
