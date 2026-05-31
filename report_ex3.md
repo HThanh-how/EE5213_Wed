@@ -1,6 +1,6 @@
 # ASIC Verification - Exercise 3 Report
-**Student:** <STUDENT_NAME>  
-**Student ID:** <STUDENT_ID>  
+**Student:** Vu Tien Giang  
+**Student ID:** 2570188  
 
 ---
 
@@ -32,10 +32,27 @@ Given two FSMs $M_A$ and $M_B$ sharing the same input set $I$ and output set $O$
 - Output: $o_i = v_i$.
 - Initial State: $v_i = 0$.
 
+```mermaid
+stateDiagram-v2
+    [*] --> 0
+    0 --> 0 : a=0
+    0 --> 1 : a=1
+    1 --> 1 : a=0
+    1 --> 0 : a=1
+```
+
 #### FSM $M_2'$ (Reset/Hold FSM)
 - Transition: $v_2' = 0$ if $a=0$, and $v_2' = v_2$ if $a=1$ (resets on $a=0$, holds on $a=1$).
 - Output: $o_2 = v_2$.
 - Initial State: $v_2 = 0$.
+
+```mermaid
+stateDiagram-v2
+    [*] --> 0
+    0 --> 0 : a=0, 1
+    1 --> 1 : a=1
+    1 --> 0 : a=0
+```
 
 ---
 
@@ -55,9 +72,16 @@ The shared-input product transitions for $M_1 \times M_2$ are computed using $v_
 | 1 | 1 | 0 | 0 | 1 |
 | 1 | 1 | 1 | 0 | 0 |
 
-Reachable states starting from $(0,0)$:
-$$(0,0) \xrightarrow{a=1} (1,1) \xrightarrow{a=1} (0,0)$$
-$$(0,0) \xrightarrow{a=0} (0,0), \quad (1,1) \xrightarrow{a=0} (1,1)$$
+Reachable state transition graph:
+
+```mermaid
+stateDiagram-v2
+    [*] --> 00 : (0,0)
+    00 --> 00 : a=0
+    00 --> 11 : a=1
+    11 --> 11 : a=0
+    11 --> 00 : a=1
+```
 
 #### Case 2: $M_1 \times M_2'$ (Shared-Input Product)
 The shared-input product transitions for $M_1 \times M_2'$ are computed using $v_1' = v_1 \oplus a$ and $v_2' = a ? v_2 : 0$.
@@ -73,9 +97,16 @@ The shared-input product transitions for $M_1 \times M_2'$ are computed using $v
 | 1 | 1 | 0 | 0 | 0 |
 | 1 | 1 | 1 | 0 | 1 |
 
-Reachable states starting from $(0,0)$:
-$$(0,0) \xrightarrow{a=1} (1,0) \xrightarrow{a=1} (0,0)$$
-$$(0,0) \xrightarrow{a=0} (0,0), \quad (1,0) \xrightarrow{a=0} (1,0)$$
+Reachable state transition graph:
+
+```mermaid
+stateDiagram-v2
+    [*] --> 00 : (0,0)
+    00 --> 00 : a=0
+    00 --> 10 : a=1
+    10 --> 10 : a=0
+    10 --> 00 : a=1
+```
 
 ---
 
