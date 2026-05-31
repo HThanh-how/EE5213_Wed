@@ -1,0 +1,17 @@
+[
+  {
+    "description": "Safety: Never heat while door is open -> AG(Heat implies DoorClosed). Expect False because s5 violates this.",
+    "formula": ["AG", ["IMPLIES", "Heat", "DoorClosed"]],
+    "expected": false
+  },
+  {
+    "description": "Liveness: From start, we can eventually reach Done -> EF(Done)",
+    "formula": ["EF", "Done"],
+    "expected": true
+  },
+  {
+    "description": "Possibility: The door can be opened at any time -> AG(EF(DoorOpen)). Wait, in s5 (error), it loops forever. Let's see EF(DoorOpen) from s5. s5 has DoorOpen! So it's true.",
+    "formula": ["AG", ["EF", "DoorOpen"]],
+    "expected": true
+  }
+]

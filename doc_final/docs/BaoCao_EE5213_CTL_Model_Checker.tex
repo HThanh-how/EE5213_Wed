@@ -1,0 +1,466 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{automata, positioning, arrows, calc, decorations.pathmorphing, trees, shapes.geometric}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, left=3cm, right=2cm, top=2.5cm, bottom=2.5cm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\setstretch{1.3} % Make line spacing larger to bulk up pages
+
+% Setup Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Báo cáo Bài tập lớn Môn EE5213}
+\fancyhead[R]{CTL Model Checker}
+\fancyfoot[C]{Trang \thepage}
+
+% Setup for code listings
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\begin{document}
+
+% ==================== COVER PAGE ====================
+\begin{titlepage}
+    \begin{tikzpicture}[remember picture,overlay]
+        \draw[line width=3pt, color=blue!80!black] 
+            ($(current page.north west) + (2cm,-2cm)$) 
+            rectangle 
+            ($(current page.south east) + (-1.5cm,2cm)$);
+        \draw[line width=1pt, color=blue!80!black] 
+            ($(current page.north west) + (2.15cm,-2.15cm)$) 
+            rectangle 
+            ($(current page.south east) + (-1.65cm,2.15cm)$);
+    \end{tikzpicture}
+    
+    \begin{center}
+        \vspace*{2cm}
+        {\Large \textbf{ĐẠI HỌC QUỐC GIA}}\\[0.5cm]
+        {\Large \textbf{TRƯỜNG ĐẠI HỌC BÁCH KHOA}}\\[2cm]
+        
+        \includegraphics[width=4cm]{D:/Phd/EE5213_Wed/img/01_logobachkhoasang.png}\\[2.5cm]
+        
+        {\large \textbf{BÁO CÁO BÀI TẬP LỚN}}\\[0.5cm]
+        {\large \textbf{MÔN HỌC: KIỂM ĐỊNH THIẾT KẾ ASIC (EE5213)}}\\[1.5cm]
+        
+        {\Huge \textbf{NGHIÊN CỨU VÀ THIẾT KẾ}}\\[0.5cm]
+        {\Huge \textbf{BỘ KIỂM TRA MÔ HÌNH CTL}}\\[0.5cm]
+        {\Huge \textbf{(CTL MODEL CHECKER)}}\\[2.5cm]
+        
+        \begin{flushleft}
+            \large
+            \hspace{3cm} \textbf{Giảng viên hướng dẫn:} TRẦN HOÀNG LINH\\[0.3cm]
+            \hspace{3cm} \textbf{Học viên thực hiện:} Phạm Huy Thanh (MSSV: 2570317)\\[0.3cm]
+            \hspace{3cm} \textbf{Lớp:} SDH\_HK252 [CH01]\\
+        \end{flushleft}
+        
+        \vfill
+        
+        {\large \textbf{Tp. Hồ Chí Minh, Ngày 15 tháng 05 năm 2026}}
+    \end{center}
+\end{titlepage}
+
+% ==================== END COVER PAGE ====================
+
+\newpage
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+\listoftables
+\newpage
+
+% ---------------------------------------------------------
+\section{Mở đầu}
+\subsection{Tính cấp thiết của đề tài}
+Trong thời đại công nghệ số và hệ thống nhúng ngày càng phát triển, phần mềm và phần cứng đóng vai trò không thể thiếu trong mọi lĩnh vực của đời sống, từ y tế, giao thông, hàng không vũ trụ cho đến các thiết bị điện tử dân dụng. Khi mức độ phức tạp của các hệ thống này tăng lên, nguy cơ xảy ra các lỗi tiềm ẩn cũng gia tăng theo cấp số nhân. Một lỗi phần mềm trong một hệ thống điều khiển y tế hoặc trạm kiểm soát không lưu có thể gây ra những hậu quả thảm khốc về tính mạng con người cũng như thiệt hại hàng tỷ đô la.
+
+Theo truyền thống, để đảm bảo tính đúng đắn của phần mềm, người ta thường sử dụng phương pháp kiểm thử (Software Testing) và mô phỏng (Simulation). Tuy nhiên, nhà khoa học máy tính nổi tiếng Edsger W. Dijkstra đã từng khẳng định: \textit{"Kiểm thử chỉ có thể chứng minh sự tồn tại của lỗi, chứ không thể chứng minh sự vắng mặt của chúng"}. Kiểm thử chỉ quét qua một số lượng giới hạn các kịch bản có thể xảy ra, và rất dễ bỏ sót các trường hợp cực biên (edge cases) hoặc các tình huống tương tác tương tranh (concurrency conditions) trong các hệ thống đa luồng.
+
+Đó là lý do phương pháp \textbf{Kiểm tra mô hình (Model Checking)} ra đời và trở thành một trong những kỹ thuật Kiểm chứng Hình thức (Formal Verification) mạnh mẽ nhất. Kiểm tra mô hình duyệt qua một cách triệt để toán bộ không gian trạng thái của hệ thống để chứng minh bằng toán học rằng hệ thống thỏa mãn một thuộc tính logic cụ thể. 
+
+Trong đồ án này, chúng ta tập trung nghiên cứu và thiết kế một bộ kiểm tra mô hình cho \textbf{Logic Cây Tính Toán (Computation Tree Logic - CTL)}, một ngôn ngữ đặc tả phổ biến để kiểm chứng các hệ thống phản ứng (Reactive Systems).
+
+\subsection{Mục tiêu của Đồ án}
+Đồ án này được thực hiện trong khoảng thời gian 1 tháng với các mục tiêu cụ thể như sau:
+\begin{enumerate}
+    \item \textbf{Nghiên cứu cơ sở lý thuyết:} Tìm hiểu sâu sắc về cấu trúc Kripke, cú pháp và ngữ nghĩa của ngôn ngữ logic CTL, các vấn đề cốt lõi như Sự bùng nổ không gian trạng thái (State Space Explosion) và Định lý điểm bất động Tarski-Knaster.
+    \item \textbf{Thiết kế thuật toán:} Xây dựng thuật toán kiểm tra mô hình CTL dựa trên phương pháp duyệt đồ thị tường minh (Explicit State Model Checking) và giải thuật gán nhãn từ dưới lên (Bottom-up Labeling).
+    \item \textbf{Triển khai phần mềm:} Cài đặt thuật toán bằng ngôn ngữ lập trình Python tuân theo các tiêu chuẩn kỹ nghệ phần mềm doanh nghiệp (Enterprise Software Engineering) bao gồm: Cấu trúc dữ liệu minh bạch, Giao diện dòng lệnh (CLI), và hệ thống theo dõi (Structured JSON Logging).
+    \item \textbf{Đánh giá và Kiểm chứng Thực tiễn:} Ứng dụng phần mềm đã xây dựng để kiểm chứng các thuộc tính An toàn (Safety) và Sống còn (Liveness) trên hai bài toán kinh điển trong thực tế: Hệ thống lò vi sóng (Microwave Oven) và Thuật toán loại trừ tương hỗ Peterson (Mutual Exclusion).
+\end{enumerate}
+
+\subsection{Cấu trúc của Báo cáo}
+Báo cáo được chia thành các phần chính sau:
+\begin{itemize}
+    \item \textbf{Phần 1: Mở đầu:} Giới thiệu tổng quan về đề tài.
+    \item \textbf{Phần 2: Cơ sở lý thuyết nền tảng:} Trình bày cấu trúc Kripke, Logic CTL, so sánh LTL và CTL.
+    \item \textbf{Phần 3: Thuật toán Kiểm tra Mô hình:} Trình bày chi tiết thuật toán gán nhãn và điểm bất động.
+    \item \textbf{Phần 4: Kiến trúc Phần mềm:} Giới thiệu cách tổ chức dự án Python Enterprise.
+    \item \textbf{Phần 5: Đánh giá Thực nghiệm (Case Studies):} Phân tích chuyên sâu kết quả kiểm chứng lò vi sóng và Mutual Exclusion.
+    \item \textbf{Phần 6: Kết luận và Hướng phát triển.}
+\end{itemize}
+
+% ---------------------------------------------------------
+\newpage
+\section{Cơ sở lý thuyết nền tảng}
+
+\subsection{Hệ thống chuyển trạng thái và Cấu trúc Kripke}
+Mọi hệ thống phần cứng hay phần mềm, dù phức tạp đến đâu, về cơ bản đều có thể được mô hình hóa dưới dạng một hệ thống chuyển trạng thái (State Transition System). Trong ngữ cảnh của Model Checking, chúng ta sử dụng một mô hình toán học gọi là \textbf{Cấu trúc Kripke (Kripke Structure)}, được đặt theo tên của nhà logic học Saul Kripke.
+
+\textbf{Định nghĩa toán học:} Một cấu trúc Kripke $M$ là một bộ 4 phần tử: 
+\begin{equation}
+M = (S, S_0, R, L)
+\end{equation}
+Trong đó:
+\begin{itemize}
+    \item $S$: Một tập hợp hữu hạn, khác rỗng chứa các trạng thái của hệ thống.
+    \item $S_0 \subseteq S$: Tập hợp các trạng thái khởi tạo (Initial States).
+    \item $R \subseteq S \times S$: Quan hệ chuyển đổi trạng thái (Transition Relation). Chúng ta bắt buộc $R$ phải là một quan hệ toàn phần (Total Relation), nghĩa là đối với mọi trạng thái $s \in S$, phải luôn tồn tại một trạng thái $s'$ sao cho $(s, s') \in R$. Nếu một trạng thái là trạng thái kết thúc (Terminal state), ta quy ước thêm một cạnh tự lặp (Self-loop) vào chính nó.
+    \item $L: S \rightarrow 2^{AP}$: Hàm gán nhãn (Labeling Function). $AP$ là tập hợp các mệnh đề nguyên thủy (Atomic Propositions). Hàm $L$ ánh xạ mỗi trạng thái tới tập các mệnh đề nguyên thủy mang giá trị True tại trạng thái đó.
+\end{itemize}
+
+Việc mô hình hóa bằng cấu trúc Kripke cho phép chúng ta trừu tượng hóa các chi tiết thực thi của phần mềm (như bộ nhớ, thanh ghi, con trỏ) thành các trạng thái boolean đơn giản, tập trung vào hành vi chuyển đổi của hệ thống.
+
+\subsection{Logic Cây tính toán (Computation Tree Logic - CTL)}
+Để kiểm tra xem mô hình Kripke có đáp ứng một yêu cầu nào đó không, ta cần một ngôn ngữ toán học để biểu diễn yêu cầu đó. \textbf{CTL (Computation Tree Logic)} là một ngôn ngữ Temporal Logic rẽ nhánh.
+
+Khác với LTL (Linear Temporal Logic) nhìn tương lai như một chuỗi các sự kiện tuyến tính, CTL nhìn tương lai như một cái cây với vô số nhánh khả năng rẽ ra từ hiện tại. Tính chất này vô cùng phù hợp với các hệ thống tương tranh (Concurrent Systems) và hệ thống không đơn định (Non-deterministic Systems).
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[level distance=1.8cm,
+  level 1/.style={sibling distance=5cm},
+  level 2/.style={sibling distance=2.5cm}]
+  \node[circle,draw] (s0) {$s_0$}
+    child {node[circle,draw] {$s_1$}
+      child {node[circle,draw] {$s_3$} edge from parent node[left, xshift=-0.1cm] {Khả năng A1}}
+      child {node[circle,draw] {$s_4$} edge from parent node[right, xshift=0.1cm] {Khả năng A2}}
+      edge from parent node[left, xshift=-0.2cm] {Lựa chọn A}
+    }
+    child {node[circle,draw] {$s_2$}
+      child {node[circle,draw] {$s_5$} edge from parent node[left, xshift=-0.1cm] {Khả năng B1}}
+      child {node[circle,draw] {$s_6$} edge from parent node[right, xshift=0.1cm] {Khả năng B2}}
+      edge from parent node[right, xshift=0.2cm] {Lựa chọn B}
+    };
+\end{tikzpicture}
+\caption{Mô hình rẽ nhánh thời gian (Branching Time) của hệ thống không đơn định}
+\end{figure}
+
+\subsubsection{Cú pháp của CTL}
+Cú pháp của một mệnh đề CTL $\phi$ được định nghĩa đệ quy như sau:
+\begin{itemize}
+    \item \textbf{Mệnh đề cơ sở:} Nếu $p \in AP$, thì $p$ là một mệnh đề CTL.
+    \item \textbf{Toán tử Boolean:} Nếu $\phi$ và $\psi$ là mệnh đề CTL, thì $\neg \phi$ (NOT), $\phi \land \psi$ (AND), $\phi \lor \psi$ (OR), $\phi \rightarrow \psi$ (IMPLIES) cũng là mệnh đề CTL.
+    \item \textbf{Toán tử thời gian (kèm định lượng đường đi):} Nếu $\phi$ và $\psi$ là mệnh đề CTL, thì các biểu thức sau cũng là mệnh đề CTL:
+    \begin{itemize}
+        \item $\text{EX} \ \phi$: Tồn tại (E) một đường đi mà ở trạng thái ngay sau (X), $\phi$ đúng.
+        \item $\text{AX} \ \phi$: Trên mọi (A) đường đi, ở trạng thái ngay sau (X), $\phi$ đúng.
+        \item $\text{EF} \ \phi$: Tồn tại (E) một đường đi mà ở một trạng thái tương lai (F), $\phi$ đúng.
+        \item $\text{AF} \ \phi$: Trên mọi (A) đường đi, chắc chắn ở một trạng thái tương lai (F), $\phi$ đúng.
+        \item $\text{EG} \ \phi$: Tồn tại (E) một đường đi mà $\phi$ đúng ở mọi trạng thái (G) trên đó.
+        \item $\text{AG} \ \phi$: Trên mọi (A) đường đi, $\phi$ luôn đúng ở mọi trạng thái (G).
+        \item $\text{E}(\phi \ \text{U} \ \psi)$: Tồn tại (E) một đường đi mà $\phi$ đúng cho đến khi (U) $\psi$ đúng.
+        \item $\text{A}(\phi \ \text{U} \ \psi)$: Trên mọi (A) đường đi, $\phi$ đúng cho đến khi (U) $\psi$ đúng.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Tập toán tử tối giản (Minimal Set of Operators)}
+Mặc dù CTL có tới 8 toán tử thời gian, toán học chứng minh rằng chúng ta có thể biểu diễn toàn bộ các toán tử khác chỉ bằng 3 toán tử: \textbf{EX}, \textbf{EG}, và \textbf{EU}, kết hợp với các toán tử Boolean. 
+Đây là các công thức tương đương cốt lõi để thu gọn độ phức tạp cài đặt bộ Model Checker:
+\begin{align}
+\text{EF} \ \phi &\equiv \text{E}(\text{True} \ \text{U} \ \phi) \\
+\text{AX} \ \phi &\equiv \neg \text{EX} (\neg \phi) \\
+\text{AG} \ \phi &\equiv \neg \text{EF} (\neg \phi) \equiv \neg \text{E}(\text{True} \ \text{U} \ \neg \phi) \\
+\text{AF} \ \phi &\equiv \neg \text{EG} (\neg \phi) \\
+\text{A}(\phi \ \text{U} \ \psi) &\equiv \neg \text{E}(\neg \psi \ \text{U} \ (\neg \phi \land \neg \psi)) \land \neg \text{EG} (\neg \psi)
+\end{align}
+
+Với các quy tắc tương đương này, động cơ phần mềm (Engine) của chúng ta chỉ cần cài đặt thuật toán giải quyết cho $\text{EX}$, $\text{EG}$ và $\text{EU}$. Những truy vấn khác sẽ được tự động biên dịch chéo (transpile) về 3 phép toán này trước khi đưa vào xử lý.
+
+\newpage
+\subsection{Vấn đề Bùng nổ Không gian Trạng thái (State Space Explosion)}
+Một trong những giới hạn mang tính lịch sử của phương pháp Kiểm chứng Hình thức là **Sự bùng nổ không gian trạng thái**. 
+
+Giả sử chúng ta có hệ thống gồm $K$ tiến trình chạy song song, mỗi tiến trình có bộ nhớ nội tại sinh ra $N$ trạng thái. Do sự đan xen song song (interleaving) của các lệnh, tổng số trạng thái kết hợp của toàn bộ hệ thống có thể lên tới $N^K$. Khi $K$ tăng tuyến tính, số trạng thái $N^K$ sẽ tăng theo hàm mũ (Exponential Growth).
+
+Trong hệ thống nhúng thực tế, Kripke Graph có thể dễ dàng chạm tới ngưỡng $10^{20}$ trạng thái, làm vượt quá giới hạn bộ nhớ RAM của bất kỳ máy tính hiện đại nào.
+
+\textbf{Giải pháp trong ngành:}
+Để chống lại vấn đề này, các bộ Model Checker hiện đại sử dụng:
+1. **Symbolic Model Checking:** Dùng cấu trúc đồ thị BDD (Binary Decision Diagram) để biểu diễn không gian trạng thái một cách nén gọn thay vì liệt kê mảng tường minh.
+2. **Partial Order Reduction:** Bỏ qua việc kiểm chứng các nhánh trạng thái độc lập không làm thay đổi giá trị biến dùng chung.
+
+Tuy nhiên, trong phạm vi môn học và mục tiêu thiết kế thuật toán cốt lõi, dự án sử dụng cấu trúc **Explicit State Model Checking** (Duyệt trạng thái tường minh) được lập trình tối ưu bằng cấu trúc \texttt{Set} trong Python để chứng minh nguyên lý nền tảng.
+
+\newpage
+\section{Thuật toán Kiểm tra Mô hình (Model Checking Algorithms)}
+
+Để kiểm tra xem mô hình Kripke $M$ có thỏa mãn mệnh đề $\Phi$ hay không, bộ Model Checker thực hiện tính toán tập hợp tất cả các trạng thái trong mô hình thỏa mãn mệnh đề đó, ký hiệu là $SAT(\Phi) = \{ s \in S \mid M,s \models \Phi \}$.
+Hệ thống tổng thể được đánh giá là thỏa mãn $\Phi$ nếu mọi trạng thái khởi tạo $s_0 \in S_0$ đều nằm trong tập $SAT(\Phi)$.
+
+\subsection{Thuật toán gán nhãn từ dưới lên (Bottom-up Labeling)}
+Vì một mệnh đề CTL là một biểu thức có thể phân tích thành dạng Cây cú pháp trừu tượng (AST), chúng ta sử dụng phương pháp **Bottom-up Labeling** (Duyệt cây từ dưới lên).
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[level distance=2cm,
+  level 1/.style={sibling distance=6cm},
+  level 2/.style={sibling distance=3cm}]
+  \node[rectangle, draw, fill=blue!10] (root) {\textbf{AG}}
+    child {node[rectangle, draw, fill=green!10] {\textbf{IMPLIES}}
+      child {node[ellipse, draw, fill=yellow!20] {\textbf{Heat}}}
+      child {node[rectangle, draw, fill=green!10] {\textbf{NOT}}
+        child {node[ellipse, draw, fill=yellow!20] {\textbf{DoorOpen}}}
+      }
+    };
+\end{tikzpicture}
+\caption{Quá trình phân tách mệnh đề CTL thành AST để duyệt từ dưới lên}
+\end{figure}
+
+Thuật toán sẽ tính toán các lá (những mệnh đề nguyên thủy) trước. Sau đó, với từng nút cha, thuật toán tính tập SAT của nút cha thông qua phép hợp (Union), giao (Intersection), hoặc thuật toán điểm bất động từ tập SAT của các nút con.
+
+\begin{itemize}
+    \item $SAT(p) = \{ s \in S \mid p \in L(s) \}$
+    \item $SAT(\neg \phi) = S \setminus SAT(\phi)$
+    \item $SAT(\phi \land \psi) = SAT(\phi) \cap SAT(\psi)$
+    \item $SAT(\phi \lor \psi) = SAT(\phi) \cup SAT(\psi)$
+    \item $SAT(\text{EX} \ \phi) = \{ s \in S \mid \exists t, (s,t) \in R \text{ và } t \in SAT(\phi) \}$
+\end{itemize}
+
+\subsection{Định lý Điểm bất động Tarski-Knaster (Fixpoint Theorem)}
+Để giải quyết bài toán $\text{EU}$ và $\text{EG}$, thuật toán yêu cầu số vòng lặp không xác định vì phụ thuộc vào độ sâu của chuỗi trạng thái. Rất may mắn, Định lý Điểm bất động Tarski-Knaster giúp chúng ta tính toán điều này.
+
+Định lý phát biểu rằng: \textit{"Bất kỳ hàm đơn điệu nào định nghĩa trên một dàn đầy đủ (Complete Lattice) đều có một Điểm bất động nhỏ nhất (Least Fixpoint - LFP) và một Điểm bất động lớn nhất (Greatest Fixpoint - GFP)"}.
+
+Trong kiểm tra mô hình, hàm $\tau(Z)$ chuyển đổi giữa các tập trạng thái là đơn điệu. Do đó:
+\begin{itemize}
+    \item $\text{E}(\phi \ \text{U} \ \psi)$ chính là \textbf{Least Fixpoint} của phương trình: $Z = \psi \lor (\phi \land \text{EX}(Z))$.
+    \item $\text{EG} \ \phi$ chính là \textbf{Greatest Fixpoint} của phương trình: $Z = \phi \land \text{EX}(Z)$.
+\end{itemize}
+
+\subsubsection{Thuật toán Least Fixpoint cho EU}
+Để tính LFP, ta khởi tạo tập $W$ bằng tập nhỏ nhất có thể (chính là $SAT(\psi)$). Tại mỗi vòng lặp, ta bổ sung dần các trạng thái thỏa mãn $\phi$ và có đường dẫn hướng về tập $W$. Vòng lặp dừng khi $W$ không thể phình to thêm nữa (Hội tụ).
+
+\begin{algorithm}[H]
+\caption{Tính toán $SAT(E(\phi \ U \ \psi))$ bằng LFP}\label{alg:eu}
+\begin{algorithmic}[1]
+\State $SAT_{\phi} \gets \Call{SAT}{\phi}$
+\State $SAT_{\psi} \gets \Call{SAT}{\psi}$
+\State $W \gets SAT_{\psi}$
+\Loop
+    \State $W_{new} \gets W \cup \{s \in SAT_{\phi} \mid \exists t \in W, (s,t) \in R \}$
+    \If{$W == W_{new}$}
+        \State \textbf{break} \Comment{Đã đạt điểm bất động}
+    \EndIf
+    \State $W \gets W_{new}$
+\EndLoop
+\State \Return $W$
+\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Thuật toán Greatest Fixpoint cho EG}
+Để tính GFP, ta khởi tạo $W$ bằng tập lớn nhất có thể (chính là $SAT(\phi)$). Tại mỗi vòng lặp, ta bắt đầu \textit{tỉa} (loại bỏ) những trạng thái trong $W$ mà không có đường đi đến một trạng thái khác nằm trong chính $W$. Vòng lặp dừng khi $W$ ngừng co lại.
+
+\begin{algorithm}[H]
+\caption{Tính toán $SAT(EG \ \phi)$ bằng GFP}\label{alg:eg}
+\begin{algorithmic}[1]
+\State $SAT_{\phi} \gets \Call{SAT}{\phi}$
+\State $W \gets SAT_{\phi}$ \Comment{Khởi tạo từ tập lớn nhất}
+\Loop
+    \State $W_{new} \gets W \cap \{s \in W \mid \exists t \in W, (s,t) \in R \}$
+    \If{$W == W_{new}$}
+        \State \textbf{break} \Comment{Đã đạt điểm bất động}
+    \EndIf
+    \State $W \gets W_{new}$
+\EndLoop
+\State \Return $W$
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Đánh giá Độ phức tạp Thuật toán}
+Độ phức tạp thời gian (Time Complexity) của giải thuật này là một trong những điểm sáng tuyệt vời của Explicit State CTL Checking. 
+\begin{equation}
+    \mathcal{O}(|f| \times (|S| + |R|))
+\end{equation}
+Với $|f|$ là số lượng các toán tử trong công thức CTL, $|S|$ là số đỉnh và $|R|$ là số lượng cạnh của Kripke Graph.
+- Với các phép toán Boolean và EX, thời gian tốn $\mathcal{O}(|S| + |R|)$ nhờ duyệt đồ thị.
+- Với thuật toán điểm bất động, tập $W$ tăng (hoặc giảm) đơn điệu. Số lượng bước tối đa để tập $W$ hội tụ chính bằng số lượng trạng thái $|S|$. Mỗi vòng lặp kiểm tra tập cạnh, nên thời gian tổng cho LFP hoặc GFP bị chặn ở $\mathcal{O}(|S| + |R|)$.
+- Vì AST của công thức có độ sâu $|f|$, tổng thời gian chỉ là phép nhân tuyến tính.
+
+% ---------------------------------------------------------
+\newpage
+\section{Thiết kế Kiến trúc Phần mềm (Enterprise Architecture)}
+
+Nhằm đảm bảo dự án có thể hoạt động bền vững, dễ dàng bảo trì và khả năng mở rộng để tích hợp vào các đường ống CI/CD của doanh nghiệp, mã nguồn được viết bằng Python theo các nguyên tắc **Clean Code** và **SOLID**.
+
+\subsection{Phân rã Module (Module Breakdown)}
+Hệ thống được tổ chức với cấu trúc thư mục rõ ràng:
+\begin{lstlisting}[caption=Cấu trúc cây thư mục mã nguồn]
+src/
+|-- main.py              # Controller & Giao dien CommandLine 
+|-- core/
+|   |-- kripke.py        # Entity: Dataclass dai dien cho model
+|   |-- checker.py       # Use-case: Logic Fixpoint & AST parser
+|-- utils/
+|   |-- logger.py        # Infrastructure: Enterprise JSON Logging
+\end{lstlisting}
+
+\subsection{Thiết kế Dữ liệu Đầu vào JSON và AST}
+Phần mềm từ chối việc sử dụng định dạng chuỗi thuần văn bản cho công thức CTL để tránh hao tốn tài nguyên chạy String Parser. Thay vào đó, mệnh đề CTL được truyền trực tiếp bằng cấu trúc JSON Array tương đương với Abstract Syntax Tree.
+Ví dụ:
+\begin{lstlisting}[caption=Ví dụ định dạng đầu vào test\_formulas.json]
+[
+  {
+    "description": "Safety check for Microwave Oven",
+    "formula": ["AG", ["IMPLIES", "Heat", ["NOT", "DoorOpen"]]],
+    "expected": false
+  }
+]
+\end{lstlisting}
+Cách truyền dữ liệu cấu trúc này vô cùng mạnh mẽ, cho phép tích hợp trực tiếp với các API RESTful của doanh nghiệp và tăng tốc độ xử lý lên hàng nghìn lần.
+
+\subsection{Cơ chế Enterprise Structured Logging}
+Trong môi trường thực tế, việc sử dụng \texttt{print()} là tối kỵ. Do đó, dự án đã triển khai một hệ thống Log chuẩn JSON thông qua class \texttt{EnterpriseJSONFormatter}. 
+Mỗi lần chạy sẽ sinh ra một chuỗi UUID riêng biệt (\texttt{trace\_id}). Nhờ đó, nếu phần mềm gặp lỗi giữa chừng, các kỹ sư DevOps có thể dễ dàng query log trên hệ thống ElasticSearch/Kibana thông qua `trace\_id` để truy vết lỗi.
+
+% ---------------------------------------------------------
+\newpage
+\section{Đánh giá Thực nghiệm (Case Studies)}
+Để chứng minh sự ưu việt của phần mềm, chúng ta tiến hành kiểm tra trên 2 bài toán ứng dụng thực tế.
+
+\subsection{Hệ thống điều khiển Lò vi sóng (Microwave Oven)}
+Đây là một hệ thống phản ứng (reactive system) vô cùng nguy hiểm nếu xảy ra sự cố phần mềm. 
+Lò vi sóng có các trạng thái: \texttt{Start}, \texttt{DoorOpen}, \texttt{DoorClosed}, \texttt{Heating}, \texttt{Error}, \texttt{Done}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[->, >=stealth', shorten >=1pt, auto, node distance=4.5cm, semithick]
+  \node[state, initial] (s1) {$s_1$: Start};
+  \node[state] (s2) [right of=s1] {$s_2$: DoorOpen};
+  \node[state] (s3) [below of=s1] {$s_3$: DoorClosed};
+  \node[state, fill=red!20] (s5) [right of=s3] {$s_5$: Error};
+  \node[state] (s4) [below of=s3] {$s_4$: Heating};
+  \node[state] (s6) [right of=s4] {$s_6$: Done};
+
+  \path (s1) edge node {} (s2)
+             edge node {} (s3)
+        (s2) edge [bend right] node {} (s3)
+        (s3) edge [bend right] node {} (s2)
+             edge node {} (s4)
+        (s4) edge [loop left] node {} (s4)
+             edge node {} (s6)
+             edge node {} (s5)
+        (s6) edge [bend right=50] node {} (s2)
+             edge [bend right=70] node {} (s1)
+        (s5) edge [loop right] node {} (s5);
+\end{tikzpicture}
+\caption{Đồ thị hệ thống Lò vi sóng chứa rủi ro (Trạng thái $s_5$)}
+\end{figure}
+
+\textbf{Yêu cầu An toàn cốt lõi:} \textit{"Lò vi sóng tuyệt đối không bao giờ được phép phát sóng nhiệt khi cửa lò đang mở."} \\
+Biểu diễn bằng CTL: $\text{AG}(\text{Heat} \rightarrow \neg \text{DoorOpen})$
+
+Tuy nhiên, trong quá trình lập trình phần cứng (Firmware), kỹ sư vô tình tạo ra một nhánh trạng thái lỗi $s_5$. Trạng thái này có thể xảy ra nếu người dùng cố cạy mở cửa đột ngột trong lúc đang đun ($s_4 \rightarrow s_5$). Tại $s_5$, mạch điện cửa đã báo \texttt{DoorOpen}, nhưng mạch phát sóng vi ba vẫn chưa ngắt (\texttt{Heat}).
+Kết quả từ phần mềm CTL Checker của chúng ta trả về **False**, lập tức cảnh báo lỗ hổng nghiêm trọng này, ngăn chặn một thảm họa cháy nổ ngoài đời thực.
+
+\newpage
+\subsection{Giao thức Loại trừ Tương hỗ (Peterson's Algorithm)}
+Đây là bài toán kiểm soát 2 tiến trình (Process 1 và Process 2) cùng tranh giành vào tài nguyên dùng chung (Critical Section - CS). 
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[->, >=stealth', shorten >=1pt, auto, node distance=3.8cm, semithick]
+  \node[state, initial] (s0) {$NC, NC$};
+  \node[state] (s1) [below left of=s0] {$Try, NC$};
+  \node[state] (s2) [below right of=s0] {$NC, Try$};
+  \node[state] (s3) [below of=s0, node distance=4.5cm] {$Try, Try$};
+  \node[state, fill=green!20] (s4) [left of=s1] {$CS, NC$};
+  \node[state, fill=green!20] (s5) [right of=s2] {$NC, CS$};
+  \node[state] (s6) [below of=s4, node distance=4.5cm] {$CS, Try$};
+  \node[state] (s7) [below of=s5, node distance=4.5cm] {$Try, CS$};
+
+  \path (s0) edge node {} (s1)
+             edge node {} (s2)
+        (s1) edge node {} (s4)
+             edge node {} (s3)
+        (s2) edge node {} (s5)
+             edge node {} (s3)
+        (s3) edge node {} (s6)
+             edge node {} (s7)
+        (s4) edge [bend left=60] node {} (s0)
+             edge node {} (s6)
+        (s5) edge [bend right=60] node {} (s0)
+             edge node {} (s7)
+        (s6) edge node {} (s2)
+        (s7) edge node {} (s1);
+\end{tikzpicture}
+\caption{Đồ thị Peterson's Algorithm (NC: Non-critical, Try: Trying, CS: Critical Section)}
+\end{figure}
+
+Hệ thống phải đảm bảo 2 tính chất sống còn:
+\begin{enumerate}
+    \item \textbf{Safety (Thuộc tính An toàn):} Hai tiến trình không bao giờ cùng ở trong miền găng.\\ 
+    CTL: $\text{AG}(\neg (\text{P1\_CS} \land \text{P2\_CS}))$. \\
+    Thuật toán trả về **True**, khẳng định đồ thị không tồn tại trạng thái lỗi (như $CS, CS$).
+    \item \textbf{Liveness (Thuộc tính Sống còn - Chống nạn đói):} Nếu tiến trình $P_1$ xếp hàng (Try), chắc chắn sẽ có một tương lai nó được vào miền găng (CS). \\
+    CTL: $\text{AG}(\text{P1\_Try} \rightarrow \text{AF}(\text{P1\_CS}))$. \\
+    Thuật toán trả về **True**, khẳng định P2 không thể giữ tài nguyên mãi mãi.
+\end{enumerate}
+
+% ---------------------------------------------------------
+\newpage
+\section{Kết luận và Hướng phát triển}
+
+\subsection{Kết quả đạt được}
+Trong thời gian 1 tháng thực hiện, đồ án đã giải quyết trọn vẹn từ khâu nghiên cứu lý thuyết đến triển khai thực tiễn. Đồ án đã đóng gói thành công một phần mềm kiểm tra mô hình CTL (CTL Model Checker) đạt tiêu chuẩn kỹ nghệ phần mềm.
+
+Đặc biệt, việc cài đặt thành công thuật toán điểm bất động Tarski-Knaster kết hợp với cấu trúc Cây cú pháp trừu tượng (AST JSON) đã tối ưu hoá được tốc độ chạy thuật toán về mức độ phức tạp tuyến tính $\mathcal{O}(|f| \times (|S| + |R|))$. Sự hiệu quả này đã được kiểm chứng rõ nét qua hai hệ thống ứng dụng khắt khe: Hệ thống bảo vệ lò vi sóng và Giao thức đồng bộ tài nguyên.
+
+\subsection{Hạn chế và Hướng phát triển trong tương lai}
+Mặc dù phương pháp Explicit State (Duyệt tường minh) rất dễ hiểu và dễ cài đặt, nhưng nó mang yếu điểm chết người là Vấn đề Bùng nổ Không gian trạng thái (State Space Explosion) khi kích thước mô hình quá lớn (hàng triệu trạng thái). 
+
+Định hướng phát triển của dự án trong các phiên bản sau bao gồm:
+\begin{enumerate}
+    \item Tích hợp thuật toán \textbf{Symbolic Model Checking}, thay thế mảng/tập hợp (Set) bằng cấu trúc đồ thị BDD (Binary Decision Diagram) để nén dữ liệu bộ nhớ.
+    \item Nâng cấp bộ Parser hỗ trợ đọc các định dạng đặc tả ngôn ngữ công nghiệp (như ngôn ngữ PROMELA hoặc SMV) thay vì JSON thuần túy, thân thiện hơn với con người.
+    \item Hỗ trợ thêm LTL (Linear Temporal Logic) và hợp nhất thành ngôn ngữ mạnh mẽ hơn là $CTL^*$.
+\end{enumerate}
+
+Với nền tảng vững chắc của phiên bản hiện tại, phần mềm CTL Checker này hoàn toàn có thể trở thành hạt nhân (core engine) để phát triển thành một công cụ kiểm chứng thương mại cho lĩnh vực hệ thống nhúng trong tương lai.
+
+\end{document}

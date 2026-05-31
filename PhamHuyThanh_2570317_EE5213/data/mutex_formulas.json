@@ -1,0 +1,12 @@
+[
+  {
+    "description": "Safety: P1 and P2 are never in critical section at the same time. AG(NOT (P1_CS AND P2_CS))",
+    "formula": ["AG", ["NOT", ["AND", "P1_CS", "P2_CS"]]],
+    "expected": true
+  },
+  {
+    "description": "Liveness (No starvation): If P1 tries, it will eventually enter CS. AG(P1_Try -> AF(P1_CS))",
+    "formula": ["AG", ["IMPLIES", "P1_Try", ["AF", "P1_CS"]]],
+    "expected": true
+  }
+]

@@ -1,0 +1,27 @@
+\babel@toc {vietnamese}{}\relax 
+\contentsline {section}{\numberline {1}Mở đầu}{4}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Tính cấp thiết của đề tài}{4}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Mục tiêu của Đồ án}{4}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Cấu trúc của Báo cáo}{5}{subsection.1.3}%
+\contentsline {section}{\numberline {2}Cơ sở lý thuyết nền tảng}{6}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Hệ thống chuyển trạng thái và Cấu trúc Kripke}{6}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Logic Cây tính toán (Computation Tree Logic - CTL)}{6}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Cú pháp của CTL}{7}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Tập toán tử tối giản (Minimal Set of Operators)}{7}{subsubsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.3}Vấn đề Bùng nổ Không gian Trạng thái (State Space Explosion)}{9}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Thuật toán Kiểm tra Mô hình (Model Checking Algorithms)}{10}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Thuật toán gán nhãn từ dưới lên (Bottom-up Labeling)}{10}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Định lý Điểm bất động Tarski-Knaster (Fixpoint Theorem)}{11}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Thuật toán Least Fixpoint cho EU}{11}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Thuật toán Greatest Fixpoint cho EG}{11}{subsubsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.3}Đánh giá Độ phức tạp Thuật toán}{12}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Thiết kế Kiến trúc Phần mềm (Enterprise Architecture)}{13}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Phân rã Module (Module Breakdown)}{13}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Thiết kế Dữ liệu Đầu vào JSON và AST}{13}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Cơ chế Enterprise Structured Logging}{13}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Đánh giá Thực nghiệm (Case Studies)}{15}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Hệ thống điều khiển Lò vi sóng (Microwave Oven)}{15}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Giao thức Loại trừ Tương hỗ (Peterson's Algorithm)}{17}{subsection.5.2}%
+\contentsline {section}{\numberline {6}Kết luận và Hướng phát triển}{18}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Kết quả đạt được}{18}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Hạn chế và Hướng phát triển trong tương lai}{18}{subsection.6.2}%
