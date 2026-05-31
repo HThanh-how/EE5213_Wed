@@ -19,6 +19,7 @@ jobs:
         uses: xu-cheng/latex-action@v3
         with:
           root_file: "EE5213_*.tex"
+          glob_root_file: true
           
       - name: Create Release
         uses: softprops/action-gh-release@v2

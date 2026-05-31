@@ -21,6 +21,7 @@ jobs:
         uses: xu-cheng/latex-action@v3
         with:
           root_file: "EE5213_*.tex"
+          glob_root_file: true
           
       - name: Upload PDF Artifacts
         uses: actions/upload-artifact@v4
