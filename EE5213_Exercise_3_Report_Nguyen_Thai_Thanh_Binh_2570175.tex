@@ -1,0 +1,504 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A,T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{automata, positioning, arrows.meta}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{black}
+}
+\lstset{style=mystyle}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+
+\textbf{\large VIETNAM NATIONAL UNIVERSITY HO CHI MINH CITY}\\
+\textbf{\large HO CHI MINH CITY UNIVERSITY OF TECHNOLOGY}\\
+\textbf{\normalsize Faculty of Electrical and Electronics Engineering}\\
+\vspace{0.5cm}
+
+\includegraphics[width=0.25\textwidth]{img/01_logobachkhoasang.png}\\
+\vspace{0.5cm}
+
+\rule{\linewidth}{0.5mm}\\
+\vspace{0.5cm}
+
+\textbf{\huge ASIC Verification}\\
+\textbf{\large EE5213}\\
+\vspace{0.3cm}
+
+\textbf{\Large Exercise 3 Report}\\
+\vspace{0.3cm}
+
+\textbf{\LARGE FSM Sequential Equivalence Checking}\\
+\vspace{0.3cm}
+
+\rule{\linewidth}{0.5mm}\\
+\vspace{1cm}
+
+\begin{tabular}{rl}
+\textbf{Student:} & Nguyen Thai Thanh Binh - 2570175\\[0.5cm]
+\end{tabular}
+
+\vspace{1cm}
+
+\begin{tabular}{rl}
+\textbf{Instructor:} & TS. Tran Hoang Linh
+\end{tabular}
+
+\vfill
+
+{\large \today}
+
+\end{titlepage}
+
+\newpage
+
+\section{Exercise 3: FSM Sequential Equivalence Checking}
+
+\subsection{Objective}
+The objective of this exercise is to implement and analyze the Sequential Equivalence Checking (SEC) algorithm for Finite State Machines (FSMs) using Reachability Analysis on a Shared-Input Product Machine. We verify the equivalence of two designs:
+\begin{enumerate}
+    \item \textbf{Case 1:} $M_1$ versus $M_2$, both representing a T-Flip-Flop (T-FF) machine that toggles its state when the input $a = 1$ and holds its state when $a = 0$.
+    \item \textbf{Case 2:} $M_1$ (T-FF) versus $M_2'$ (Reset/Hold FSM), where $M_2'$ resets to state $0$ when input $a = 0$ and holds its state when $a = 1$.
+\end{enumerate}
+
+\subsection{Theoretical Background}
+Sequential Equivalence Checking compares the behavior of two FSMs under all possible input sequences.
+Given two FSMs $M_A = (S_A, I, O, \delta_A, \lambda_A, S_{A,0})$ and $M_B = (S_B, I, O, \delta_B, \lambda_B, S_{B,0})$ sharing the same input set $I$ and output set $O$:
+
+\begin{itemize}
+    \item \textbf{Shared-Input Product Machine ($M_C = M_A \times M_B$):}
+    \begin{itemize}
+        \item State Space: $S_C = S_A \times S_B$
+        \item Transition Relation: $R_C((s_A, s_B), i, (s_A', s_B')) = \delta_A(s_A, i, s_A') \land \delta_B(s_B, i, s_B')$
+        \item Initial States: $S_{C,0} = S_{A,0} \times S_{B,0}$
+    \end{itemize}
+    \item \textbf{Equivalence Condition:}
+    The FSMs $M_A$ and $M_B$ are sequentially equivalent if and only if for all reachable states $(s_A, s_B)$ in the product machine, their outputs are identical:
+    \[ \forall (s_A, s_B) \in \text{Reachable}(M_C), \quad \lambda_A(s_A) = \lambda_B(s_B) \]
+    If a reachable state $(s_A, s_B)$ exists such that $\lambda_A(s_A) \neq \lambda_B(s_B)$, the FSMs are not equivalent. The path leading to this state provides a counterexample.
+\end{itemize}
+
+\subsection{Specification of the FSMs}
+
+\subsubsection{FSM $M_1$ and $M_2$ (T-Flip-Flops)}
+The FSM $M_1$ (with state $v_1 \in \{0, 1\}$) and $M_2$ (with state $v_2 \in \{0, 1\}$) are defined by:
+\begin{itemize}
+    \item Transition: $v_i' = v_i \oplus a$ (toggles when $a=1$, holds when $a=0$).
+    \item Output: $o_i = v_i$.
+    \item Initial State: $v_i = 0$.
+\end{itemize}
+
+The state diagram for $M_1$ (and $M_2$) is shown in Figure \ref{fig:fsm_m1}.
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}[>={Stealth[length=2.5mm]}, shorten >=1pt, node distance=3cm, on grid, auto, thick]
+       \node[state, initial, initial text=] (0) {$0$};
+       \node[state] (1) [right=of 0] {$1$};
+       \path[->] 
+        (0) edge [loop above] node {$0$} (0)
+            edge [bend left] node {$1$} (1)
+        (1) edge [loop above] node {$0$} (1)
+            edge [bend left] node {$1$} (0);
+    \end{tikzpicture}
+    \caption{State Diagram of T-FF FSM ($M_1$ and $M_2$)}
+    \label{fig:fsm_m1}
+\end{figure}
+
+\subsubsection{FSM $M_2'$ (Reset/Hold FSM)}
+The FSM $M_2'$ (with state $v_2 \in \{0, 1\}$) is defined by:
+\begin{itemize}
+    \item Transition: $v_2' = 0$ if $a=0$, and $v_2' = v_2$ if $a=1$ (resets on $a=0$, holds on $a=1$).
+    \item Output: $o_2 = v_2$.
+    \item Initial State: $v_2 = 0$.
+\end{itemize}
+
+The state diagram for $M_2'$ is shown in Figure \ref{fig:fsm_m2_prime}.
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}[>={Stealth[length=2.5mm]}, shorten >=1pt, node distance=3.5cm, on grid, auto, thick]
+       \node[state, initial, initial text=] (0) {$0$};
+       \node[state] (1) [right=of 0] {$1$};
+       \path[->] 
+        (0) edge [loop above] node {$0,1$} (0)
+        (1) edge [loop above] node {$1$} (1)
+            edge [above] node {$0$} (0);
+    \end{tikzpicture}
+    \caption{State Diagram of Reset/Hold FSM ($M_2'$)}
+    \label{fig:fsm_m2_prime}
+\end{figure}
+
+\subsection{Product Machine Transition Analysis}
+
+\subsubsection{Case 1: $M_1 \times M_2$ (Shared-Input Product)}
+The shared-input product transitions for $M_1 \times M_2$ are computed using $v_1' = v_1 \oplus a$ and $v_2' = v_2 \oplus a$. The transition relation is detailed in Table \ref{tab:case1_trans}.
+
+\begin{table}[h!]
+    \centering
+    \caption{Transition Table for Product Machine $M_1 \times M_2$}
+    \label{tab:case1_trans}
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        \textbf{Input ($a$)} & \textbf{Current State $v_1$} & \textbf{Current State $v_2$} & \textbf{Next State $v_1'$} & \textbf{Next State $v_2'$} \\ \hline
+        0 & 0 & 0 & 0 & 0 \\ \hline
+        0 & 0 & 1 & 0 & 1 \\ \hline
+        0 & 1 & 0 & 1 & 0 \\ \hline
+        0 & 1 & 1 & 1 & 1 \\ \hline
+        1 & 0 & 0 & 1 & 1 \\ \hline
+        1 & 0 & 1 & 1 & 0 \\ \hline
+        1 & 1 & 0 & 0 & 1 \\ \hline
+        1 & 1 & 1 & 0 & 0 \\ \hline
+    \end{tabular}
+\end{table}
+
+Starting from the initial state $(0,0)$, the reachable state transition graph is shown in Figure \ref{fig:prod_case1}.
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}[>={Stealth[length=2.5mm]}, shorten >=1pt, node distance=3.5cm, on grid, auto, thick]
+       \node[state, initial, initial text=] (00) {$(0,0)$};
+       \node[state] (11) [right=of 00] {$(1,1)$};
+       \path[->] 
+        (00) edge [loop above] node {$0$} (00)
+             edge [bend left] node {$1$} (11)
+        (11) edge [loop above] node {$0$} (11)
+             edge [bend left] node {$1$} (00);
+    \end{tikzpicture}
+    \caption{Reachable State Transitions of Product Machine $M_1 \times M_2$}
+    \label{fig:prod_case1}
+\end{figure}
+
+\subsubsection{Case 2: $M_1 \times M_2'$ (Shared-Input Product)}
+The shared-input product transitions for $M_1 \times M_2'$ are computed using $v_1' = v_1 \oplus a$ and $v_2' = a ? v_2 : 0$. The transition relation is detailed in Table \ref{tab:case2_trans}.
+
+\begin{table}[h!]
+    \centering
+    \caption{Transition Table for Product Machine $M_1 \times M_2'$}
+    \label{tab:case2_trans}
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        \textbf{Input ($a$)} & \textbf{Current State $v_1$} & \textbf{Current State $v_2$} & \textbf{Next State $v_1'$} & \textbf{Next State $v_2'$} \\ \hline
+        0 & 0 & 0 & 0 & 0 \\ \hline
+        0 & 0 & 1 & 0 & 0 \\ \hline
+        0 & 1 & 0 & 1 & 0 \\ \hline
+        0 & 1 & 1 & 1 & 0 \\ \hline
+        1 & 0 & 0 & 1 & 0 \\ \hline
+        1 & 0 & 1 & 1 & 1 \\ \hline
+        1 & 1 & 0 & 0 & 0 \\ \hline
+        1 & 1 & 1 & 0 & 1 \\ \hline
+    \end{tabular}
+\end{table}
+
+Starting from the initial state $(0,0)$, the reachable state transition graph is shown in Figure \ref{fig:prod_case2}.
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}[>={Stealth[length=2.5mm]}, shorten >=1pt, node distance=3.5cm, on grid, auto, thick]
+       \node[state, initial, initial text=] (00) {$(0,0)$};
+       \node[state] (10) [right=of 00] {$(1,0)$};
+       \path[->] 
+        (00) edge [loop above] node {$0$} (00)
+             edge [bend left] node {$1$} (10)
+        (10) edge [loop above] node {$0$} (10)
+             edge [bend left] node {$1$} (00);
+    \end{tikzpicture}
+    \caption{Reachable State Transitions of Product Machine $M_1 \times M_2'$}
+    \label{fig:prod_case2}
+\end{figure}
+
+\subsection{Implementation (\texttt{fsm\_equivalence.cpp})}
+The C++ program builds the shared-input product machine and performs reachability-based equivalence checking. It tracks the BFS search frontier, prints details of each step, checks output constraints, and traces paths to generate counterexamples.
+
+\begin{lstlisting}[language=C++]
+#include <iostream>
+#include <vector>
+#include <set>
+#include <map>
+#include <queue>
+#include <algorithm>
+#include <string>
+
+// Represents a state in the product machine: (v1, v2)
+struct StatePair {
+    int v1;
+    int v2;
+
+    bool operator<(const StatePair& other) const {
+        if (v1 != other.v1) return v1 < other.v1;
+        return v2 < other.v2;
+    }
+
+    bool operator==(const StatePair& other) const {
+        return v1 == other.v1 && v2 == other.v2;
+    }
+};
+
+// Transition function for M1 (T-FF)
+int trans_M1(int v1, int a) {
+    return v1 ^ a; // Toggles on a=1, holds on a=0
+}
+
+// Transition function for M2 (T-FF)
+int trans_M2(int v2, int a) {
+    return v2 ^ a; // Toggles on a=1, holds on a=0
+}
+
+// Transition function for M2' (Reset on a=0, Hold on a=1)
+int trans_M2_prime(int v2, int a) {
+    return (a == 0) ? 0 : v2; // Resets on a=0, holds on a=1
+}
+
+// Outputs (state is output)
+int out_M1(int v1) { return v1; }
+int out_M2(int v2) { return v2; }
+int out_M2_prime(int v2) { return v2; }
+
+// Perform Equivalence Checking on two FSMs
+void check_equivalence(
+    int (*trans1)(int, int),
+    int (*trans2)(int, int),
+    int (*out1)(int),
+    int (*out2)(int),
+    int init1,
+    int init2,
+    const std::string& fsm1_name,
+    const std::string& fsm2_name
+) {
+    std::cout << "========================================\n";
+    std::cout << "Checking Equivalence: " << fsm1_name << " vs " << fsm2_name << "\n";
+    std::cout << "========================================\n";
+
+    StatePair init_state = {init1, init2};
+    std::set<StatePair> ARS = {init_state}; // All Reached States
+    std::set<StatePair> NNS = {init_state}; // New Next States (Frontier)
+
+    // Store the shortest input path to each state for counterexample generation
+    std::map<StatePair, std::vector<int>> path;
+    path[init_state] = {};
+
+    int iteration = 1;
+    bool equivalent = true;
+    StatePair witness = {-1, -1};
+
+    // Output check on initial state
+    if (out1(init_state.v1) != out2(init_state.v2)) {
+        equivalent = false;
+        witness = init_state;
+    }
+
+    std::cout << "--- Initialization ---\n";
+    std::cout << "ARS = { (" << init_state.v1 << "," << init_state.v2 << ") }\n";
+    std::cout << "NNS = { (" << init_state.v1 << "," << init_state.v2 << ") }\n";
+
+    while (equivalent && !NNS.empty()) {
+        std::cout << "\n--- Iteration " << iteration++ << " ---\n";
+        std::set<StatePair> NS; // Next States
+
+        // For each state in the frontier
+        for (const auto& s : NNS) {
+            std::cout << "From state (" << s.v1 << "," << s.v2 << "):\n";
+            // Check under all possible inputs (a = 0 and a = 1)
+            for (int a = 0; a <= 1; ++a) {
+                int next_v1 = trans1(s.v1, a);
+                int next_v2 = trans2(s.v2, a);
+                StatePair next_state = {next_v1, next_v2};
+                
+                std::cout << "  Input a=" << a << " -> (" << next_v1 << "," << next_v2 << ")";
+                
+                // If it's a newly discovered state
+                if (ARS.find(next_state) == ARS.end()) {
+                    NS.insert(next_state);
+                    // Record path
+                    std::vector<int> p = path[s];
+                    p.push_back(a);
+                    path[next_state] = p;
+                    std::cout << " [NEW]";
+                }
+                std::cout << "\n";
+            }
+        }
+
+        // Print NS
+        std::cout << "NS = { ";
+        for (const auto& s : NS) {
+            std::cout << "(" << s.v1 << "," << s.v2 << ") ";
+        }
+        std::cout << "}\n";
+
+        // Compute new frontier NNS = NS - ARS
+        std::set<StatePair> new_NNS = NS;
+        NNS = new_NNS;
+
+        // Print NNS
+        std::cout << "NNS = { ";
+        for (const auto& s : NNS) {
+            std::cout << "(" << s.v1 << "," << s.v2 << ") ";
+        }
+        std::cout << "}\n";
+
+        if (NNS.empty()) {
+            std::cout << "NNS is empty. Terminating Reachability.\n";
+            break;
+        }
+
+        // Update ARS and check outputs for new states
+        for (const auto& s : NNS) {
+            ARS.insert(s);
+            // Check if outputs differ
+            if (out1(s.v1) != out2(s.v2)) {
+                equivalent = false;
+                witness = s;
+                break;
+            }
+        }
+
+        // Print ARS
+        std::cout << "ARS = { ";
+        for (const auto& s : ARS) {
+            std::cout << "(" << s.v1 << "," << s.v2 << ") ";
+        }
+        std::cout << "}\n";
+
+        if (!equivalent) {
+            std::cout << "\nOutput mismatch detected in state (" << witness.v1 << "," << witness.v2 << ")!\n";
+            break;
+        }
+    }
+
+    std::cout << "\n--- Verification Results ---\n";
+    std::cout << "All Reached States (ARS): { ";
+    for (const auto& s : ARS) {
+        std::cout << "(" << s.v1 << "," << s.v2 << ") ";
+    }
+    std::cout << "}\n";
+
+    if (equivalent) {
+        std::cout << "Result: FSM " << fsm1_name << " and " << fsm2_name << " are EQUIVALENT.\n";
+    } else {
+        std::cout << "Result: FSM " << fsm1_name << " and " << fsm2_name << " are NOT EQUIVALENT.\n";
+        std::cout << "Difference found at state: (" << witness.v1 << "," << witness.v2 << ")\n";
+        std::cout << "Counterexample input sequence: ";
+        const auto& ce = path[witness];
+        if (ce.empty()) {
+            std::cout << "(initial states differ)";
+        } else {
+            for (size_t i = 0; i < ce.size(); ++i) {
+                std::cout << "a=" << ce[i] << (i + 1 < ce.size() ? ", " : "");
+            }
+        }
+        std::cout << "\n";
+    }
+    std::cout << "========================================\n\n";
+}
+
+int main() {
+    // Case 1: M1 vs M2 (both T-FF, starting at 0, 0)
+    check_equivalence(trans_M1, trans_M2, out_M1, out_M2, 0, 0, "M1", "M2");
+
+    // Case 2: M1 vs M2' (T-FF vs Reset/Hold, starting at 0, 0)
+    check_equivalence(trans_M1, trans_M2_prime, out_M1, out_M2_prime, 0, 0, "M1", "M2'");
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Execution Output}
+The compiled C++ program was executed successfully. Below is the console output showing the full reachability log for both verification tasks.
+
+\begin{lstlisting}[language=bash]
+========================================
+Checking Equivalence: M1 vs M2
+========================================
+--- Initialization ---
+ARS = { (0,0) }
+NNS = { (0,0) }
+
+--- Iteration 1 ---
+From state (0,0):
+  Input a=0 -> (0,0)
+  Input a=1 -> (1,1) [NEW]
+NS = { (1,1) }
+NNS = { (1,1) }
+ARS = { (0,0) (1,1) }
+
+--- Iteration 2 ---
+From state (1,1):
+  Input a=0 -> (1,1)
+  Input a=1 -> (0,0)
+NS = { }
+NNS = { }
+NNS is empty. Terminating Reachability.
+
+--- Verification Results ---
+All Reached States (ARS): { (0,0) (1,1) }
+Result: FSM M1 and M2 are EQUIVALENT.
+========================================
+
+========================================
+Checking Equivalence: M1 vs M2'
+========================================
+--- Initialization ---
+ARS = { (0,0) }
+NNS = { (0,0) }
+
+--- Iteration 1 ---
+From state (0,0):
+  Input a=0 -> (0,0)
+  Input a=1 -> (1,0) [NEW]
+NS = { (1,0) }
+NNS = { (1,0) }
+ARS = { (0,0) (1,0) }
+
+Output mismatch detected in state (1,0)!
+
+--- Verification Results ---
+All Reached States (ARS): { (0,0) (1,0) }
+Result: FSM M1 and M2' are NOT EQUIVALENT.
+Difference found at state: (1,0)
+Counterexample input sequence: a=1
+========================================
+\end{lstlisting}
+
+\subsection{Analysis and Conclusions}
+Based on the execution results:
+\begin{enumerate}
+    \item \textbf{M1 vs. M2:} Reachability analysis finishes after two iterations. The set of reachable states is $ARS = \{(0,0), (1,1)\}$. In both states, $v_1 = v_2$, which yields identical outputs ($0=0$ and $1=1$). Thus, they are \textbf{sequentially equivalent}.
+    \item \textbf{M1 vs. M2':} The reachability search identifies state $(1,0)$ after input $a = 1$. In this state, $v_1 = 1$ while $v_2 = 0$, leading to different outputs. Output check fails, proving that $M_1$ and $M_2'$ are \textbf{not equivalent}. The input sequence $a = 1$ constitutes the counterexample witness.
+\end{enumerate}
+The Reachability-based Equivalence Checking successfully automates formal verification of synchronous systems without requiring complete state space enumeration, terminating quickly when discrepancies are found.
+
+\end{document}

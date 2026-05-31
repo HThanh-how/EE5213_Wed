@@ -96,8 +96,8 @@ At time 60000 rst=0 load=1 enab=1 cnt_in=11111 cnt_out=11111
 At time 70000 rst=0 load=0 enab=1 cnt_in=11111 cnt_out=00000
 ```
 
-
 ---
+
 ## 2. Exercise 2: Stack Design and Verification
 
 ### 2.1 Objective
@@ -233,5 +233,3 @@ Trying to pop when empty...
 Popped 11 | full=0 empty=1
 Stack is empty, correctly blocked pop.
 ```
-
-

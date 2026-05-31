@@ -1,0 +1,305 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A,T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{automata, positioning, arrows.meta}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{black}
+}
+\lstset{style=mystyle}
+
+\begin{document}
+
+\begin{titlepage}
+\centering
+
+\textbf{\large VIETNAM NATIONAL UNIVERSITY HO CHI MINH CITY}\\
+\textbf{\large HO CHI MINH CITY UNIVERSITY OF TECHNOLOGY}\\
+\textbf{\normalsize Faculty of Electrical and Electronics Engineering}\\
+\vspace{0.5cm}
+
+\includegraphics[width=0.25\textwidth]{img/01_logobachkhoasang.png}\\
+\vspace{0.5cm}
+
+\rule{\linewidth}{0.5mm}\\
+\vspace{0.5cm}
+
+\textbf{\huge ASIC Verification}\\
+\textbf{\large EE5213}\\
+\vspace{0.3cm}
+
+\textbf{\Large Exercise 2 Report}\\
+\vspace{0.3cm}
+
+\textbf{\LARGE FSM Reachability Analysis}\\
+\vspace{0.3cm}
+
+\rule{\linewidth}{0.5mm}\\
+\vspace{1cm}
+
+\begin{tabular}{rl}
+\textbf{Student:} & Nguyen Thai Thanh Binh - 2570175\\[0.5cm]
+\end{tabular}
+
+\vspace{1cm}
+
+\begin{tabular}{rl}
+\textbf{Instructor:} & TS. Tran Hoang Linh
+\end{tabular}
+
+\vfill
+
+{\large \today}
+
+\end{titlepage}
+
+\newpage
+
+\section{Exercise 2: FSM Reachability Analysis}
+
+\subsection{Objective}
+Implement the State Reachability Analysis algorithm for an arbitrary Finite State Machine (FSM) using C++. The program computes the set of reachable states given a set of initial states and a transition relation.
+
+\subsection{Design Specifications}
+\begin{itemize}
+    \item \textbf{Input:} Set of initial states ($I$), and a transition relation ($R$) mapping current states to next possible states.
+    \item \textbf{Output:} The complete set of reachable states ($ARS$ - All Reached States).
+    \item \textbf{Algorithm Strategy:}
+    \begin{itemize}
+        \item Track \textbf{All Reached States} (\texttt{ARS}) and \textbf{New Next States} (\texttt{NNS} or Frontier Set).
+        \item Iteratively compute the next states (\texttt{NS}) from the current frontier \texttt{NNS}.
+        \item Update the frontier as newly discovered states (\texttt{NNS} = \texttt{NS} - \texttt{ARS}).
+        \item Add the new frontier to the all reached states (\texttt{ARS} = \texttt{ARS} $\cup$ \texttt{NNS}).
+        \item Terminate when the frontier is empty.
+    \end{itemize}
+\end{itemize}
+
+\subsection{Example FSM Analysis}
+
+To illustrate the algorithm, consider the FSM defined in the implementation with the following transition relations:
+\begin{itemize}
+    \item $S_0 \rightarrow \{S_1, S_5\}$
+    \item $S_1 \rightarrow \{S_2\}$
+    \item $S_5 \rightarrow \{S_5, S_2\}$
+    \item $S_2 \rightarrow \{S_3\}$
+    \item $S_3 \rightarrow \{S_4\}$
+    \item $S_4 \rightarrow \emptyset$
+\end{itemize}
+
+The initial state set is $I = \{S_0\}$. The state diagram is shown in Figure \ref{fig:fsm}.
+
+\begin{figure}[h!]
+    \centering
+    \begin{tikzpicture}[>={Stealth[length=2.5mm]}, shorten >=1pt, node distance=2.5cm, on grid, auto, thick]
+       \node[state, initial, initial text=] (0) {$S_0$};
+       \node[state] (1) [above right=of 0] {$S_1$};
+       \node[state] (5) [below right=of 0] {$S_5$};
+       \node[state] (2) [below right=of 1] {$S_2$};
+       \node[state] (3) [right=of 2] {$S_3$};
+       \node[state] (4) [right=of 3] {$S_4$};
+
+       \path[->] 
+        (0) edge node {} (1)
+            edge node {} (5)
+        (1) edge node {} (2)
+        (5) edge [loop below] node {} (5)
+            edge node {} (2)
+        (2) edge node {} (3)
+        (3) edge node {} (4);
+    \end{tikzpicture}
+    \caption{State Diagram of the Example FSM}
+    \label{fig:fsm}
+\end{figure}
+
+\textbf{Step-by-Step Execution:}
+\begin{enumerate}
+    \item \textbf{Initialization:}
+    \begin{itemize}
+        \item $ARS = \{S_0\}$
+        \item Frontier $NNS = \{S_0\}$
+    \end{itemize}
+    \item \textbf{Iteration 1:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \{S_1, S_5\}$
+        \item Compute new frontier: $NNS = NS \setminus ARS = \{S_1, S_5\} \setminus \{S_0\} = \{S_1, S_5\}$
+        \item Update $ARS$: $ARS = ARS \cup NNS = \{S_0, S_1, S_5\}$
+    \end{itemize}
+    \item \textbf{Iteration 2:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \{S_2, S_5\}$ (from $S_1 \rightarrow S_2$ and $S_5 \rightarrow S_2, S_5$)
+        \item Compute new frontier: $NNS = NS \setminus ARS = \{S_2, S_5\} \setminus \{S_0, S_1, S_5\} = \{S_2\}$
+        \item Update $ARS$: $ARS = ARS \cup NNS = \{S_0, S_1, S_2, S_5\}$
+    \end{itemize}
+    \item \textbf{Iteration 3:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \{S_3\}$ (from $S_2 \rightarrow S_3$)
+        \item Compute new frontier: $NNS = NS \setminus ARS = \{S_3\} \setminus \{S_0, S_1, S_2, S_5\} = \{S_3\}$
+        \item Update $ARS$: $ARS = ARS \cup NNS = \{S_0, S_1, S_2, S_3, S_5\}$
+    \end{itemize}
+    \item \textbf{Iteration 4:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \{S_4\}$ (from $S_3 \rightarrow S_4$)
+        \item Compute new frontier: $NNS = NS \setminus ARS = \{S_4\} \setminus \{S_0, S_1, S_2, S_3, S_5\} = \{S_4\}$
+        \item Update $ARS$: $ARS = ARS \cup NNS = \{S_0, S_1, S_2, S_3, S_4, S_5\}$
+    \end{itemize}
+    \item \textbf{Iteration 5:}
+    \begin{itemize}
+        \item Compute next states from $NNS$: $NS = \emptyset$ (from $S_4 \rightarrow \emptyset$)
+        \item Compute new frontier: $NNS = NS \setminus ARS = \emptyset \setminus ARS = \emptyset$
+        \item The frontier $NNS$ is empty, so the algorithm terminates.
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Final Result:} $ARS = \{S_0, S_1, S_2, S_3, S_4, S_5\}$
+
+\subsection{Implementation (\texttt{fsm\_reachability.cpp})}
+\begin{lstlisting}[language=C++]
+#include <iostream>
+#include <vector>
+#include <set>
+#include <map>
+#include <algorithm>
+
+typedef int State;
+
+void print_set(const std::string& name, const std::set<State>& s) {
+    std::cout << name << " = { ";
+    for (State val : s) std::cout << "S" << val << " ";
+    std::cout << "}\n";
+}
+
+std::set<State> Reachability(
+    const std::map<State, std::set<State>>& R,
+    const std::set<State>& I
+) {
+    std::set<State> ARS = I;  // All Reached States
+    std::set<State> NNS = I;  // New Next States (Frontier Set)
+    int iteration = 1;
+
+    std::cout << "--- Initialization ---\n";
+    print_set("ARS", ARS);
+    print_set("NNS", NNS);
+
+    while (true) {
+        std::cout << "\n--- Iteration " << iteration++ << " ---\n";
+        std::set<State> NS; 
+        for (State s : NNS) {
+            if (R.find(s) != R.end()) {
+                for (State next_s : R.at(s)) {
+                    NS.insert(next_s);
+                }
+            }
+        }
+        print_set("NS ", NS);
+
+        std::set<State> new_NNS;
+        std::set_difference(
+            NS.begin(), NS.end(),
+            ARS.begin(), ARS.end(),
+            std::inserter(new_NNS, new_NNS.begin())
+        );
+        NNS = new_NNS;
+        print_set("NNS", NNS);
+
+        if (NNS.empty()) {
+            std::cout << "NNS is empty. Terminating.\n";
+            break;
+        }
+        ARS.insert(NNS.begin(), NNS.end());
+        print_set("ARS", ARS);
+    }
+    return ARS;
+}
+
+int main() {
+    std::map<State, std::set<State>> transition_relation = {
+        {0, {1, 5}}, {1, {2}}, {5, {5, 2}},
+        {2, {3}}, {3, {4}}, {4, {}}
+    };
+    std::set<State> initial_states = {0};
+    
+    std::cout << "Starting Reachability Analysis...\n\n";
+    std::set<State> reachable_states = Reachability(transition_relation, initial_states);
+
+    std::cout << "\nFinal Reachable States (ARS): { ";
+    for (State s : reachable_states) std::cout << "S" << s << " ";
+    std::cout << "}\n";
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{Execution Results}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{result_run.png}
+    \caption{Program Execution Output}
+    \label{fig:result_run}
+\end{figure}
+
+\begin{lstlisting}[language=bash]
+Starting Reachability Analysis...
+
+--- Initialization ---
+ARS = { S0 }
+NNS = { S0 }
+
+--- Iteration 1 ---
+NS  = { S1 S5 }
+NNS = { S1 S5 }
+ARS = { S0 S1 S5 }
+
+--- Iteration 2 ---
+NS  = { S2 S5 }
+NNS = { S2 }
+ARS = { S0 S1 S2 S5 }
+
+--- Iteration 3 ---
+NS  = { S3 }
+NNS = { S3 }
+ARS = { S0 S1 S2 S3 S5 }
+
+--- Iteration 4 ---
+NS  = { S4 }
+NNS = { S4 }
+ARS = { S0 S1 S2 S3 S4 S5 }
+
+--- Iteration 5 ---
+NS  = { }
+NNS = { }
+NNS is empty. Terminating.
+
+Final Reachable States (ARS): { S0 S1 S2 S3 S4 S5 }
+\end{lstlisting}
+
+\end{document}
